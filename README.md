@@ -63,5 +63,4 @@ Alternatively, you can use QTCreator 5.7+ to load the project, and compile it fo
 3. HOW TO CONTRIBUTE
 ------------------------------------------------
 
-Send a email to contact@gtronick.com with your suggestions. Also, consider making a donation. 
-Do you want to contribute to the code? Sure!, leave your contact info at the contact page at gtronick.com and submit the fom.
+Do you want to contribute to the code? Sure!, leave your contact info at the contact page at gtronick.com and submit the form, or send an email to contact@gtronick.com.
