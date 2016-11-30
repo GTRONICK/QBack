@@ -54,7 +54,7 @@ C. Copying several files:
 2. HOW TO BUILD FROM SOURCE
 ------------------------------------------------
 
-1. qmake CopyUtility.pro
+1. qmake QBack.pro
 2. make all -j4
 3. make clean
 
