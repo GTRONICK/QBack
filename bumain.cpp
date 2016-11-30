@@ -235,7 +235,7 @@ void BUMain::on_helpButton_clicked()
 {
 
     QMessageBox::about(this, tr("About Backup Utility"),
-    tr("<h2>Backup Utility 1.0</h2>"
+    tr("<h2>QBack</h2>"
     "<p>Copyright &copy; 2016 GTRONICK."
     "<p>Enter each file path ended with comma ( , ) and without trailing spaces."
     "For example:"
