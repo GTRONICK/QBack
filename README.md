@@ -1,5 +1,5 @@
-# CopyUtility
-Copy utility similar to a bakcup utility but simpler.
+# QBack
+A simple bakcup utility.
 
 01 September 2016.
 
