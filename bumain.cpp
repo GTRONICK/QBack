@@ -26,7 +26,7 @@ BUMain::BUMain(QWidget *parent) :
     gobLogViewer = new LogViewer;
     this->initThreadSetup();
     this->move(QApplication::desktop()->screen()->rect().center() - this->rect().center());
-
+    this->loadSessionFile("Session.txt");
 }
 
 bool BUMain::eventFilter(QObject *obj, QEvent *event)
@@ -130,6 +130,18 @@ void BUMain::uninstallEventFilters()
     ui->openTargetButton->removeEventFilter(this);
     ui->backupButton->removeEventFilter(this);
     ui->fromFilesTextArea->removeEventFilter(this);
+}
+
+bool BUMain::saveSessionToFile(QString filePath)
+{
+    QFile file(filePath);
+    if (!file.open(QIODevice::WriteOnly))
+           return false;
+
+    QTextStream out(&file);
+    out << ui->fromFilesTextArea->toPlainText() + "\n--" + ui->toFilesTextField->text();
+    file.close();
+    return true;
 }
 
 void BUMain::on_backupButton_clicked()
@@ -326,5 +338,33 @@ void BUMain::main_slot_showMessage(QString message)
 
 void BUMain::on_cancelButton_clicked()
 {
-    qDebug() << "Cancel pressed";
+    main_slot_showMessage("Function not implemented yet");
+}
+
+void BUMain::closeEvent(QCloseEvent *event)
+{
+    if(this->saveSessionToFile("Session.txt"))
+        event->accept();
+    else
+        event->ignore();
+}
+
+void BUMain::loadSessionFile(QString asFilePath)
+{
+    QFile file(asFilePath);
+    if(file.exists()){
+        if (!file.open(QIODevice::ReadWrite | QIODevice::Text))
+            return;
+
+       QTextStream in(&file);
+       while (!in.atEnd()) {
+          QString line = in.readLine();
+          if(!line.startsWith("--")){
+              ui->fromFilesTextArea->appendPlainText(line);
+          }
+          else{
+              ui->toFilesTextField->setText(line.replace("--",""));
+          }
+       }
+    }
 }
