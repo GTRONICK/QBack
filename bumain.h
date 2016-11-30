@@ -22,6 +22,7 @@ class BUMain : public QMainWindow
 public:
     explicit BUMain(QWidget *parent = 0);
     bool eventFilter(QObject *obj, QEvent *event);
+    void closeEvent(QCloseEvent *event);
     ~BUMain();
 
 signals:
@@ -47,12 +48,14 @@ private slots:
 
     void on_cancelButton_clicked();
 
+
 private:
     void initThreadSetup();
     int countAllFiles(QString path);
     void installEventFilters();
     void uninstallEventFilters();
-
+    bool saveSessionToFile(QString filePath);
+    void loadSessionFile(QString asFilePath);
     Ui::BUMain *ui;
     QThread *thread;
     Worker *worker;
