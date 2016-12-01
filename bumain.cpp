@@ -234,7 +234,7 @@ void BUMain::on_toFilesTextField_textChanged()
 void BUMain::on_helpButton_clicked()
 {
 
-    QMessageBox::about(this, tr("About Backup Utility"),
+    QMessageBox::about(this, tr("About QBack"),
     tr("<h2>QBack</h2>"
     "<p>Copyright &copy; 2016 GTRONICK."
     "<p>Enter each file path ended with comma ( , ) and without trailing spaces."
