@@ -1,6 +1,7 @@
 #include "bumain.h"
 #include "ui_bumain.h"
 #include <QDebug>
+#include <qdebug.h>
 #include <QThread>
 #include <QFileDialog>
 #include <QMessageBox>
@@ -12,8 +13,9 @@ BUMain::BUMain(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::BUMain)
 {
+
     ui->setupUi(this);
-    ui->statusBar->showMessage("App launched",0);
+    ui->statusBar->showMessage("Version: 101216",0);
     this->installEventFilters();
     ui->backupButton->setEnabled(false);
     ui->openTargetButton->setEnabled(false);
@@ -23,6 +25,7 @@ BUMain::BUMain(QWidget *parent) :
     giFileCounter = 0;
     giTotalFolders = 0;
     validatorFlag = 0;
+    giKeep = 0;
     gobLogViewer = new LogViewer;
     this->initThreadSetup();
     this->move(QApplication::desktop()->screen()->rect().center() - this->rect().center());
@@ -77,9 +80,8 @@ void BUMain::initThreadSetup()
     thread = new QThread;
     worker = new Worker;
     worker->moveToThread(thread);
-
     connect(worker,SIGNAL(worker_Signal_updateProgressBar(int)),ui->overallCopyProgressBar,SLOT(setValue(int)),Qt::QueuedConnection);
-    connect(this,SIGNAL(main_signal_copyFile(QString,QString)),worker,SLOT(worker_Slot_copyFile(QString,QString)),Qt::QueuedConnection);
+    connect(this,SIGNAL(main_signal_copyFile(QString,QString,int)),worker,SLOT(worker_Slot_copyFile(QString,QString,int)),Qt::QueuedConnection);
     connect(worker,SIGNAL(worker_signal_keepCopying()),this,SLOT(main_slot_keepCopying()),Qt::QueuedConnection);
     connect(worker,SIGNAL(worker_signal_logInfo(QString)),gobLogViewer,SLOT(logger_slot_logInfo(QString)),Qt::QueuedConnection);
     connect(worker,SIGNAL(worker_signal_statusInfo(QString)),this,SLOT(main_slot_setStatus(QString)));
@@ -147,6 +149,7 @@ bool BUMain::saveSessionToFile(QString filePath)
 void BUMain::on_backupButton_clicked()
 {
 
+    giKeep = 0;
     ui->toFilesTextField->setText(ui->toFilesTextField->text().trimmed());
 
     this->uninstallEventFilters();
@@ -168,7 +171,7 @@ void BUMain::on_backupButton_clicked()
     if(recursiveAlertFlag == 0){
         ui->overallCopyProgressBar->setValue(0);
         ui->overallCopyProgressBar->setMaximum(giFileCounter > 0 ? giFileCounter:1);
-        emit(main_signal_copyFile(gobPaths.at(0),ui->toFilesTextField->text().trimmed()));
+        emit(main_signal_copyFile(gobPaths.at(0),ui->toFilesTextField->text().trimmed(),giKeep));
     }else{
         QMessageBox::critical(this,"Recursive operation alert!","The target folder is the same source folder");
     }
@@ -234,9 +237,10 @@ void BUMain::on_toFilesTextField_textChanged()
 void BUMain::on_helpButton_clicked()
 {
 
-    QMessageBox::about(this, tr("About QBack"),
+    QMessageBox::about(this, tr("About Backup Utility"),
     tr("<h2>QBack</h2>"
     "<p>Copyright &copy; 2016 GTRONICK."
+    "<p>Version: 101216."
     "<p>Enter each file path ended with comma ( , ) and without trailing spaces."
     "For example:"
     "<p>C:\\File.txt,"
@@ -248,11 +252,13 @@ void BUMain::on_helpButton_clicked()
 void BUMain::main_slot_keepCopying()
 {
     giProgress ++;
-    if(giProgress < gobPaths.length()){
-        emit(main_signal_copyFile(gobPaths.at(giProgress),ui->toFilesTextField->text()));
+    if(giProgress < gobPaths.length() && giKeep == 0){
+        emit(main_signal_copyFile(gobPaths.at(giProgress),ui->toFilesTextField->text(),giKeep));
     }else{
         QMessageBox::information(this,"Information","Operation executed");
         this->installEventFilters();
+        ui->overallCopyProgressBar->setValue(0);
+        ui->statusBar->showMessage("Ready.");
     }
 
 }
@@ -338,7 +344,10 @@ void BUMain::main_slot_showMessage(QString message)
 
 void BUMain::on_cancelButton_clicked()
 {
-    main_slot_showMessage("Function not implemented yet");
+    giKeep = 1;
+    giProgress = 0;
+    ui->statusBar->showMessage("Cancelling...");
+
 }
 
 void BUMain::closeEvent(QCloseEvent *event)
