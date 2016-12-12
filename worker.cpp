@@ -68,7 +68,7 @@ bool Worker::copyRecursively(QString srcFilePath, QString tgtFilePath)
 
         if(gobFile->copy(tgtFilePath+"/"+fileName)){
             giTotalFiles ++;
-            emit(worker_signal_logInfo(QDateTime::currentDateTime().toString() + " >> File: " + fileName + " << copied to: " + tgtFilePath));
+            emit(worker_signal_logInfo(QDateTime::currentDateTime().toString() + " >> File: " + srcFilePath + " << copied to: " + tgtFilePath));
             emit(worker_Signal_updateProgressBar(giTotalFiles));
         }else{
             emit(worker_signal_logInfo(QDateTime::currentDateTime().toString() + " >> ERROR! File: " + fileName + " << has not been copied!"));
