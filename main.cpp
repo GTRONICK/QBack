@@ -13,5 +13,6 @@ int main(int argc, char *argv[])
     topRight, Qt::white);
     BUMain w;
     w.show();
+    splash->close();
     return a.exec();
 }
