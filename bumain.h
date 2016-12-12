@@ -26,14 +26,16 @@ public:
     ~BUMain();
 
 signals:
-    void main_signal_copyFile(QString file,QString path);
+    void main_signal_copyFile(QString file,QString path,int giKeep);
     void main_startCopyFiles(QStringList files,QString path);
     void main_signal_saveLogToFile(bool value);
+    void main_signal_test(bool value);
 
 private slots:
     void on_backupButton_clicked();
     void on_originButton_clicked();
     void on_targetButton_clicked();
+    void on_cancelButton_clicked();
     void on_toFilesTextField_textChanged();
     void on_helpButton_clicked();
     void on_openTargetButton_clicked();
@@ -45,8 +47,6 @@ private slots:
     void main_slot_setStatus(QString status);
     void main_slot_fileSize(qint64 size);
     void main_slot_setCurrentFileProgressStatus(qint64 progress);
-
-    void on_cancelButton_clicked();
 
 
 private:
@@ -63,6 +63,7 @@ private:
     QString targetFolder;
     QStringList gobPaths;
     LogViewer *gobLogViewer;
+    int giKeep;
     int giCurrentPos;
     int giPreviousPos;
     int giFileCounter;
