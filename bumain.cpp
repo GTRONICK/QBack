@@ -15,7 +15,7 @@ BUMain::BUMain(QWidget *parent) :
 {
 
     ui->setupUi(this);
-    ui->statusBar->showMessage("Version: 101216",0);
+    ui->statusBar->showMessage("Version: " + QString::number(APP_VERSION),0);
     this->installEventFilters();
     ui->backupButton->setEnabled(false);
     ui->openTargetButton->setEnabled(false);
@@ -236,17 +236,17 @@ void BUMain::on_toFilesTextField_textChanged()
 
 void BUMain::on_helpButton_clicked()
 {
+    const char *helpText = ("<h2>QBack</h2>"
+               "<p>Copyright &copy; 2016 GTRONICK."
+               "<p>Enter each file path ended with comma ( , ) and without trailing spaces."
+               "For example:"
+               "<p>C:\\File.txt,"
+               "<br>C:\\Documents and settings\\Document.pdf,"
+               "<br>/home/user/Documents/script.sh,"
+               "<p>You can paste clipboard contents here, but be sure to end each file path with comma");
 
     QMessageBox::about(this, tr("About Backup Utility"),
-    tr("<h2>QBack</h2>"
-    "<p>Copyright &copy; 2016 GTRONICK."
-    "<p>Version: 101216."
-    "<p>Enter each file path ended with comma ( , ) and without trailing spaces."
-    "For example:"
-    "<p>C:\\File.txt,"
-    "<br>C:\\Documents and settings\\Document.pdf,"
-    "<br>/home/user/Documents/script.sh,"
-    "<p>You can paste clipboard contents here, but be sure to end each file path with comma"));
+    tr(helpText));
 }
 
 void BUMain::main_slot_keepCopying()
