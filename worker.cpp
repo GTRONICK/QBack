@@ -12,7 +12,6 @@ Worker::Worker(QObject *parent) :
     QObject(parent)
 {
     giTotalFiles = 0;
-    giStopCopyFlag = 0;
 }
 
 void Worker::setFileCounter(int value)
@@ -20,20 +19,23 @@ void Worker::setFileCounter(int value)
     giTotalFiles = value;
 }
 
-void Worker::worker_Slot_copyFile(QString sourceFileOrFolder,QString destinationFolder)
+void Worker::worker_Slot_copyFile(QString sourceFileOrFolder,QString destinationFolder,int giKeep)
 {
-    if(!copyRecursively(sourceFileOrFolder,destinationFolder)){
-        emit(worker_signal_logInfo("Folder can't be copied!"));
-        emit(worker_signal_showMessage("Folder cannot be copied. It may already exist or you don't have enought permissions \nOpen the target and verify if it already exist"));
-    }
+    if(giKeep == 0){
+        if(!copyRecursively(sourceFileOrFolder,destinationFolder)){
+            emit(worker_signal_logInfo("Folder can't be copied!"));
+            emit(worker_signal_showMessage("Folder cannot be copied. It may already exist or you don't have enought permissions \nOpen the target and verify if it already exist"));
+        }
 
-    emit(worker_signal_keepCopying());
+        emit(worker_signal_keepCopying());
+    }
 }
 
 void Worker::printToConsole(QString text)
 {
     qDebug() << text;
 }
+
 bool Worker::copyRecursively(QString srcFilePath, QString tgtFilePath)
 {
 
@@ -64,9 +66,9 @@ bool Worker::copyRecursively(QString srcFilePath, QString tgtFilePath)
 
         emit(worker_signal_statusInfo("Copying file #" + QString::number(giTotalFiles + 1) + " : " + fileName));
 
-        if(giStopCopyFlag == 0 && gobFile->copy(tgtFilePath+"/"+fileName)){
+        if(gobFile->copy(tgtFilePath+"/"+fileName)){
             giTotalFiles ++;
-            emit(worker_signal_logInfo(QDateTime::currentDateTime().toString() + " >> File: " + srcFilePath + " << copied to: " + tgtFilePath));
+            emit(worker_signal_logInfo(QDateTime::currentDateTime().toString() + " >> File: " + fileName + " << copied to: " + tgtFilePath));
             emit(worker_Signal_updateProgressBar(giTotalFiles));
         }else{
             emit(worker_signal_logInfo(QDateTime::currentDateTime().toString() + " >> ERROR! File: " + fileName + " << has not been copied!"));
