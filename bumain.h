@@ -2,7 +2,7 @@
 #define BUMAIN_H
 
 #define TOOLTIP_DURATION 2000
-
+#define APP_VERSION 121216
 #include <QMainWindow>
 #include <QEvent>
 #include <QThread>
