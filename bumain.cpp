@@ -27,9 +27,58 @@ BUMain::BUMain(QWidget *parent) :
     validatorFlag = 0;
     giKeep = 0;
     gobLogViewer = new LogViewer;
+    QString lineEditStyle = "QLineEdit {"
+            "border: 2px solid gray;"
+            "border-radius: 5px;"
+            "padding: 0 8px;"
+            "color: rgb(187, 187, 187);"
+            "background:rgb(60, 63, 65);"
+            "selection-background-color: rgb(187, 187, 187);"
+            "selection-color: rgb(60, 63, 65);"
+            "}";
+
+    QString progessBarStyle = "QProgressBar {text-align: center;"
+                                    "border: 2px solid grey;"
+                                    "color: rgb(255, 255, 255);"
+                                    "border-radius: 5px;}"
+                     "QProgressBar::chunk {background-color: rgb(187, 187, 187);}";
+
+    this->setStyleSheet("background-color:rgb(60, 63, 65);"
+                        "color: rgb(187, 187, 187);"
+                        "border-color: rgb(100, 100, 100);");
+    gsButtonStyle_enter = "border-style: inset;"
+            "border-width: 1px; border-radius: 5px;"
+            "border-color: rgb(100, 100, 100);"
+            "border-style: solid;"
+            "color: rgb(187, 187, 187);"
+            "padding: 6px;"
+            "background-color: qlineargradient(spread:pad, x1:0.523, y1:0.766545, x2:0.518, y2:0.148364, stop:0 rgba(70, 75, 77, 255), stop:1 rgba(100, 105, 107, 255));";
+    gsButtonStyle_leave = "border-style: inset;"
+            "border-width: 1px; border-radius: 5px;"
+            "border-color: rgb(100, 100, 100);"
+            "border-style: solid;"
+            "color: rgb(187, 187, 187);"
+            "padding: 6px;"
+            "background-color: qlineargradient(spread:pad, x1:0.523, y1:0.766545, x2:0.518, y2:0.148364, stop:0 rgba(50, 55, 57, 255), stop:1 rgba(80, 85, 87, 255));";
+    gsButtonStyle_click = "border-style: inset;"
+            "border-width: 1px; border-radius: 5px;"
+            "border-color: rgb(100, 100, 100);"
+            "border-style: solid;"
+            "color: rgb(187, 187, 187);"
+            "padding: 6px;"
+            "background-color: qlineargradient(spread:pad, x1:0.523, y1:0.766545, x2:0.518, y2:0.148364, stop:0 rgba(30, 35, 37, 255), stop:1 rgba(50, 55, 57, 255));";
     this->initThreadSetup();
     this->move(QApplication::desktop()->screen()->rect().center() - this->rect().center());
     this->loadSessionFile("Session.txt");
+    ui->openTargetButton->setStyleSheet(gsButtonStyle_leave);
+    ui->backupButton->setStyleSheet(gsButtonStyle_leave);
+    ui->originButton->setStyleSheet(gsButtonStyle_leave);
+    ui->helpButton->setStyleSheet(gsButtonStyle_leave);
+    ui->logViewerButton->setStyleSheet(gsButtonStyle_leave);
+    ui->targetButton->setStyleSheet(gsButtonStyle_leave);
+    ui->cancelButton->setStyleSheet(gsButtonStyle_leave);
+    ui->overallCopyProgressBar->setStyleSheet(progessBarStyle);
+    ui->toFilesTextField->setStyleSheet(lineEditStyle);
 }
 
 bool BUMain::eventFilter(QObject *obj, QEvent *event)
@@ -38,31 +87,64 @@ bool BUMain::eventFilter(QObject *obj, QEvent *event)
         if (event->type() == QEvent::Enter)
         {
             ui->statusBar->showMessage("Select the files to copy",TOOLTIP_DURATION);
+            ui->originButton->setStyleSheet(gsButtonStyle_enter);
+        }else if (event->type() == QEvent::Leave){
+            ui->originButton->setStyleSheet(gsButtonStyle_leave);
+        }else if (event->type() == QEvent::MouseButtonPress){
+            ui->originButton->setStyleSheet(gsButtonStyle_click);
         }
+
     }else if(obj == (QObject*)ui->helpButton){
         if (event->type() == QEvent::Enter)
         {
             ui->statusBar->showMessage("Show help dialog",TOOLTIP_DURATION);
+            ui->helpButton->setStyleSheet(gsButtonStyle_enter);
+        }else if (event->type() == QEvent::Leave){
+            ui->helpButton->setStyleSheet(gsButtonStyle_leave);
+        }else if (event->type() == QEvent::MouseButtonPress){
+            ui->helpButton->setStyleSheet(gsButtonStyle_click);
         }
+
     }else if(obj == (QObject*)ui->logViewerButton){
         if (event->type() == QEvent::Enter)
         {
             ui->statusBar->showMessage("Open the log viewer",TOOLTIP_DURATION);
+            ui->logViewerButton->setStyleSheet(gsButtonStyle_enter);
+        }else if (event->type() == QEvent::Leave){
+            ui->logViewerButton->setStyleSheet(gsButtonStyle_leave);
+        }else if (event->type() == QEvent::MouseButtonPress){
+            ui->logViewerButton->setStyleSheet(gsButtonStyle_click);
         }
     }else if(obj == (QObject*)ui->targetButton){
         if (event->type() == QEvent::Enter)
         {
             ui->statusBar->showMessage("Select target folder",TOOLTIP_DURATION);
+            ui->targetButton->setStyleSheet(gsButtonStyle_enter);
+        }else if (event->type() == QEvent::Leave){
+            ui->targetButton->setStyleSheet(gsButtonStyle_leave);
+        }else if (event->type() == QEvent::MouseButtonPress){
+            ui->targetButton->setStyleSheet(gsButtonStyle_click);
         }
+
     }else if(obj == (QObject*)ui->backupButton){
         if (event->type() == QEvent::Enter)
         {
             ui->statusBar->showMessage("Start copy",TOOLTIP_DURATION);
+            ui->backupButton->setStyleSheet(gsButtonStyle_enter);
+        }else if (event->type() == QEvent::Leave){
+            ui->backupButton->setStyleSheet(gsButtonStyle_leave);
+        }else if (event->type() == QEvent::MouseButtonPress){
+            ui->backupButton->setStyleSheet(gsButtonStyle_click);
         }
+
     }else if(obj == (QObject*)ui->openTargetButton){
-        if (event->type() == QEvent::Enter)
-        {
+        if (event->type() == QEvent::Enter){
             ui->statusBar->showMessage("Open the target folder",TOOLTIP_DURATION);
+            ui->openTargetButton->setStyleSheet(gsButtonStyle_enter);
+        }else if (event->type() == QEvent::Leave){
+            ui->openTargetButton->setStyleSheet(gsButtonStyle_leave);
+        }else if (event->type() == QEvent::MouseButtonPress){
+            ui->openTargetButton->setStyleSheet(gsButtonStyle_click);
         }
     }
     return QWidget::eventFilter(obj, event);
