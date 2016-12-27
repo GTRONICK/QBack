@@ -63,6 +63,9 @@ private:
     QString targetFolder;
     QStringList gobPaths;
     LogViewer *gobLogViewer;
+    QString gsButtonStyle_enter;
+    QString gsButtonStyle_click;
+    QString gsButtonStyle_leave;
     int giKeep;
     int giCurrentPos;
     int giPreviousPos;
