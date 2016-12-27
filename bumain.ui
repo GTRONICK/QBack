@@ -105,7 +105,7 @@
              </font>
             </property>
             <property name="styleSheet">
-             <string notr="true">color: rgb(170, 0, 0);</string>
+             <string notr="true">color: rgb(255, 255, 0);</string>
             </property>
             <property name="text">
              <string>0</string>
@@ -171,7 +171,7 @@
            </size>
           </property>
           <property name="text">
-           <string>&amp;Target</string>
+           <string>Tar&amp;get</string>
           </property>
           <property name="icon">
            <iconset resource="img/icons.qrc">
@@ -301,8 +301,15 @@ color: rgb(85, 255, 0);</string>
               <height>0</height>
              </size>
             </property>
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
             <property name="text">
-             <string>Ope&amp;n Target</string>
+             <string>Open &amp;Target</string>
             </property>
             <property name="icon">
              <iconset resource="img/icons.qrc">
@@ -355,6 +362,13 @@ color: rgb(85, 255, 0);</string>
               <height>60</height>
              </size>
             </property>
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
             <property name="text">
              <string>&amp;Backup!</string>
             </property>
@@ -380,6 +394,18 @@ color: rgb(85, 255, 0);</string>
      <layout class="QHBoxLayout" name="horizontalLayout_2">
       <item>
        <widget class="QLabel" name="overallProgressLabel">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>86</width>
+          <height>16777215</height>
+         </size>
+        </property>
         <property name="text">
          <string>Overall progress          </string>
         </property>
