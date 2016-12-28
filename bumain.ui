@@ -105,7 +105,7 @@
              </font>
             </property>
             <property name="styleSheet">
-             <string notr="true">color: rgb(255, 255, 0);</string>
+             <string notr="true">color: rgb(0, 255, 0);</string>
             </property>
             <property name="text">
              <string>0</string>
@@ -134,7 +134,7 @@
              </font>
             </property>
             <property name="styleSheet">
-             <string notr="true">color: rgb(255, 85, 0);</string>
+             <string notr="true">color: rgb(255, 170, 0);</string>
             </property>
             <property name="text">
              <string>0</string>
@@ -402,7 +402,7 @@ color: rgb(85, 255, 0);</string>
         </property>
         <property name="maximumSize">
          <size>
-          <width>86</width>
+          <width>102</width>
           <height>16777215</height>
          </size>
         </property>
@@ -413,6 +413,18 @@ color: rgb(85, 255, 0);</string>
       </item>
       <item>
        <widget class="QPushButton" name="cancelButton">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>80</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="text">
          <string>&amp;Cancel</string>
         </property>
