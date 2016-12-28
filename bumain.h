@@ -28,6 +28,7 @@ signals:
     void main_signal_copyFile(QString file,QString path,int giKeep);
     void main_startCopyFiles(QStringList files,QString path);
     void main_signal_saveLogToFile(bool value);
+    void main_signal_setStopFlag(int value);
 
 private slots:
     void on_backupButton_clicked();
