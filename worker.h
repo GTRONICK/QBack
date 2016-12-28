@@ -21,15 +21,15 @@ signals:
     void worker_signal_showMessage(QString message);
 
 public slots:
+    void worker_slot_setStopFlag(int value);
     void worker_Slot_copyFile(QString sourceFileOrFolder, QString destinationFolder, int giKeep);
     void printToConsole(QString text);
 
 private:
     bool copyRecursively(QString srcFilePath, QString tgtFilePath);
     int giTotalFiles;
+    int giStopDirCopy;
     QFile *gobFile;
-
-
 };
 
 #endif // WORKER_H
