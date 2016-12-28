@@ -7,16 +7,23 @@
 #include <QCoreApplication>
 #include <QDateTime>
 #include <QMessageBox>
+#include <QApplication>
 
 Worker::Worker(QObject *parent) :
     QObject(parent)
 {
     giTotalFiles = 0;
+    giStopDirCopy = 0;
 }
 
 void Worker::setFileCounter(int value)
 {
     giTotalFiles = value;
+}
+
+void Worker::worker_slot_setStopFlag(int value)
+{
+    giStopDirCopy = value;
 }
 
 void Worker::worker_Slot_copyFile(QString sourceFileOrFolder,QString destinationFolder,int giKeep)
@@ -38,7 +45,6 @@ void Worker::printToConsole(QString text)
 
 bool Worker::copyRecursively(QString srcFilePath, QString tgtFilePath)
 {
-
     QFileInfo source(srcFilePath);
     if(source.isDir()){
         QDir leafDir(srcFilePath);
@@ -66,12 +72,16 @@ bool Worker::copyRecursively(QString srcFilePath, QString tgtFilePath)
 
         emit(worker_signal_statusInfo("Copying file #" + QString::number(giTotalFiles + 1) + " : " + fileName));
 
-        if(gobFile->copy(tgtFilePath+"/"+fileName)){
-            giTotalFiles ++;
-            emit(worker_signal_logInfo(QDateTime::currentDateTime().toString() + " >> File: " + srcFilePath + " << copied to: " + tgtFilePath));
-            emit(worker_Signal_updateProgressBar(giTotalFiles));
-        }else{
-            emit(worker_signal_logInfo(QDateTime::currentDateTime().toString() + " >> ERROR! File: " + fileName + " << has not been copied!"));
+        QApplication::processEvents();
+        if(giStopDirCopy == 0){
+            if(gobFile->copy(tgtFilePath+"/"+fileName)){
+                QApplication::processEvents();
+                giTotalFiles ++;
+                emit(worker_signal_logInfo(QDateTime::currentDateTime().toString() + " >> File: " + srcFilePath + " << copied to: " + tgtFilePath));
+                emit(worker_Signal_updateProgressBar(giTotalFiles));
+            }else{
+                emit(worker_signal_logInfo(QDateTime::currentDateTime().toString() + " >> ERROR! File: " + fileName + " << has not been copied!"));
+            }
         }
 
     }
