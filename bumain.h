@@ -2,9 +2,8 @@
 #define BUMAIN_H
 
 #define TOOLTIP_DURATION 2000
-#define APP_VERSION 121216
+#define APP_VERSION 281216
 #include <QMainWindow>
-#include <QEvent>
 #include <QThread>
 #include <QFileDialog>
 #include <QStringList>
@@ -29,7 +28,6 @@ signals:
     void main_signal_copyFile(QString file,QString path,int giKeep);
     void main_startCopyFiles(QStringList files,QString path);
     void main_signal_saveLogToFile(bool value);
-    void main_signal_test(bool value);
 
 private slots:
     void on_backupButton_clicked();
@@ -45,9 +43,6 @@ private slots:
     void main_slot_showMessage(QString message);
     void main_slot_keepCopying();
     void main_slot_setStatus(QString status);
-    void main_slot_fileSize(qint64 size);
-    void main_slot_setCurrentFileProgressStatus(qint64 progress);
-
 
 private:
     void initThreadSetup();
@@ -63,9 +58,6 @@ private:
     QString targetFolder;
     QStringList gobPaths;
     LogViewer *gobLogViewer;
-    QString gsButtonStyle_enter;
-    QString gsButtonStyle_click;
-    QString gsButtonStyle_leave;
     int giKeep;
     int giCurrentPos;
     int giPreviousPos;
