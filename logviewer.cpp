@@ -1,5 +1,6 @@
 #include "logviewer.h"
 #include "ui_logviewer.h"
+#include "styles.h"
 #include <QMessageBox>
 #include <QTextStream>
 #include <QDesktopServices>
@@ -13,6 +14,9 @@ LogViewer::LogViewer(QWidget *parent) :
     giLine = 0;
     giLogCursorPos = 0;
     this->loadLogFile();
+    Styles *lobStyle = new Styles;
+    this->setStyleSheet(lobStyle->getElegantGnomeStyle());
+
 }
 
 LogViewer::~LogViewer()
