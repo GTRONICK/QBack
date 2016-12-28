@@ -89,6 +89,7 @@ void BUMain::initThreadSetup()
     connect(worker,SIGNAL(worker_signal_logInfo(QString)),gobLogViewer,SLOT(logger_slot_logInfo(QString)),Qt::QueuedConnection);
     connect(worker,SIGNAL(worker_signal_statusInfo(QString)),this,SLOT(main_slot_setStatus(QString)));
     connect(worker,SIGNAL(worker_signal_showMessage(QString)),this,SLOT(main_slot_showMessage(QString)));
+    connect(this,SIGNAL(main_signal_setStopFlag(int)),worker,SLOT(worker_slot_setStopFlag(int)));
     connect(thread,SIGNAL(finished()),worker,SLOT(deleteLater()));
     connect(thread,SIGNAL(finished()),thread,SLOT(deleteLater()));
     thread->start();
@@ -152,7 +153,7 @@ bool BUMain::saveSessionToFile(QString filePath)
 
 void BUMain::on_backupButton_clicked()
 {
-
+    emit(main_signal_setStopFlag(0));
     giKeep = 0;
     ui->toFilesTextField->setText(ui->toFilesTextField->text().trimmed());
 
@@ -162,7 +163,7 @@ void BUMain::on_backupButton_clicked()
 
     worker->setFileCounter(0);
 
-    gobPaths = ui->fromFilesTextArea->toPlainText().split(',');
+    gobPaths = ui->fromFilesTextArea->toPlainText().split(",");
     gobPaths.removeAt(gobPaths.length() - 1);
     for(int i = 0; i < gobPaths.length(); i++){
         gobPaths.replace(i,gobPaths.at(i).trimmed());
@@ -288,14 +289,15 @@ void BUMain::on_openTargetButton_clicked()
 void BUMain::on_fromFilesTextArea_textChanged()
 {
     ui->overallCopyProgressBar->setValue(0);
+
     giTotalFolders = 0;
     int index = 0;
     int fileCount = 0;
     int notFolderCount = 0;
     int counted = 0;
 
-    QString lsAreaText = ui->fromFilesTextArea->toPlainText();
 
+    QString lsAreaText = ui->fromFilesTextArea->toPlainText();
     if(lsAreaText.lastIndexOf(",") != giCurrentPos){
         giCurrentPos = lsAreaText.lastIndexOf(",");
         QStringList files = lsAreaText.split(",");
@@ -335,6 +337,7 @@ void BUMain::main_slot_showMessage(QString message)
 
 void BUMain::on_cancelButton_clicked()
 {
+    emit(main_signal_setStopFlag(1));
     giKeep = 1;
     giProgress = 0;
     ui->statusBar->showMessage("Cancelling...");
