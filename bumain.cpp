@@ -8,6 +8,7 @@
 #include <QDesktopServices>
 #include <QApplication>
 #include <QDesktopWidget>
+#include <QScrollBar>
 
 BUMain::BUMain(QWidget *parent) :
     QMainWindow(parent),
@@ -28,45 +29,71 @@ BUMain::BUMain(QWidget *parent) :
     giKeep = 0;
     gobLogViewer = new LogViewer;
     QString lineEditStyle = "QLineEdit {"
-            "border: 2px solid gray;"
-            "border-radius: 5px;"
-            "padding: 0 8px;"
-            "color: rgb(187, 187, 187);"
-            "background:rgb(60, 63, 65);"
-            "selection-background-color: rgb(187, 187, 187);"
-            "selection-color: rgb(60, 63, 65);"
-            "}";
+                            "border-width: 1px; border-radius: 4px;"
+                            "border-color: rgb(58, 58, 58);"
+                            "border-style: inset;"
+                            "padding: 0 8px;"
+                            "color: rgb(255, 255, 255);"
+                            "background:rgb(101, 101, 101);"
+                            "selection-background-color: rgb(187, 187, 187);"
+                            "selection-color: rgb(60, 63, 65);"
+                            "}";
 
-    QString progessBarStyle = "QProgressBar {text-align: center;"
-                                    "border: 2px solid grey;"
-                                    "color: rgb(255, 255, 255);"
-                                    "border-radius: 5px;}"
-                     "QProgressBar::chunk {background-color: rgb(187, 187, 187);}";
+    QString progessBarStyle = "QProgressBar {"
+                              "text-align: center;"
+                              "color: rgb(255, 255, 255);"
+                              "border-width: 1px; "
+                              "border-radius: 10px;"
+                              "border-color: rgb(58, 58, 58);"
+                              "border-style: inset;}"
+                              "QProgressBar::chunk {"
+                              "background-color: qlineargradient(spread:pad, x1:0.5, y1:0.7, x2:0.5, y2:0.3, stop:0 rgba(0, 200, 0, 255), stop:1 rgba(30, 230, 30, 255));"
+                              "border-radius: 10px;"
+                              "}";
 
-    this->setStyleSheet("background-color:rgb(60, 63, 65);"
-                        "color: rgb(187, 187, 187);"
-                        "border-color: rgb(100, 100, 100);");
-    gsButtonStyle_enter = "border-style: inset;"
-            "border-width: 1px; border-radius: 5px;"
-            "border-color: rgb(100, 100, 100);"
+    this->setStyleSheet("background-color:rgb(82, 82, 82);"
+                        "color: rgb(255, 255, 255);"
+                        "border-color: rgb(58, 58, 58);");
+
+    gsButtonStyle_enter =
+            "border-style: outset;"
+            "border-width: 2px;"
+            "border-top-color: qlineargradient(spread:pad, x1:0.5, y1:0.6, x2:0.5, y2:0.4, stop:0 rgba(180, 180, 180, 255), stop:1 rgba(110, 110, 110, 255));"
+            "border-right-color: qlineargradient(spread:pad, x1:0.4, y1:0.5, x2:0.6, y2:0.5, stop:0 rgba(180, 180, 180, 255), stop:1 rgba(110, 110, 110, 255));"
+            "border-left-color: qlineargradient(spread:pad, x1:0.6, y1:0.5, x2:0.4, y2:0.5, stop:0 rgba(180, 180, 180, 255), stop:1 rgba(110, 110, 110, 255));"
+            "border-bottom-color: rgb(115, 115, 115);"
+            "border-bottom-width: 1px;"
             "border-style: solid;"
-            "color: rgb(187, 187, 187);"
+            "color: rgb(255, 255, 255);"
             "padding: 6px;"
-            "background-color: qlineargradient(spread:pad, x1:0.523, y1:0.766545, x2:0.518, y2:0.148364, stop:0 rgba(70, 75, 77, 255), stop:1 rgba(100, 105, 107, 255));";
-    gsButtonStyle_leave = "border-style: inset;"
-            "border-width: 1px; border-radius: 5px;"
-            "border-color: rgb(100, 100, 100);"
+            "background-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 rgba(107, 107, 107, 255), stop:1 rgba(157, 157, 157, 255));";
+
+    gsButtonStyle_leave =
+            "border-style: outset;"
+            "border-width: 2px;"
+            "border-top-color: qlineargradient(spread:pad, x1:0.5, y1:0.6, x2:0.5, y2:0.4, stop:0 rgba(115, 115, 115, 255), stop:1 rgba(62, 62, 62, 255));"
+            "border-right-color: qlineargradient(spread:pad, x1:0.4, y1:0.5, x2:0.6, y2:0.5, stop:0 rgba(115, 115, 115, 255), stop:1 rgba(62, 62, 62, 255));"
+            "border-left-color: qlineargradient(spread:pad, x1:0.6, y1:0.5, x2:0.4, y2:0.5, stop:0 rgba(115, 115, 115, 255), stop:1 rgba(62, 62, 62, 255));"
+            "border-bottom-color: rgb(58, 58, 58);"
+            "border-bottom-width: 1px;"
             "border-style: solid;"
-            "color: rgb(187, 187, 187);"
+            "color: rgb(255, 255, 255);"
             "padding: 6px;"
-            "background-color: qlineargradient(spread:pad, x1:0.523, y1:0.766545, x2:0.518, y2:0.148364, stop:0 rgba(50, 55, 57, 255), stop:1 rgba(80, 85, 87, 255));";
-    gsButtonStyle_click = "border-style: inset;"
-            "border-width: 1px; border-radius: 5px;"
-            "border-color: rgb(100, 100, 100);"
+            "background-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 rgba(77, 77, 77, 255), stop:1 rgba(97, 97, 97, 255));";
+
+    gsButtonStyle_click =
+            "border-style: outset;"
+            "border-width: 2px;"
+            "border-top-color: qlineargradient(spread:pad, x1:0.5, y1:0.6, x2:0.5, y2:0.4, stop:0 rgba(62, 62, 62, 255), stop:1 rgba(22, 22, 22, 255));"
+            "border-right-color: qlineargradient(spread:pad, x1:0.4, y1:0.5, x2:0.6, y2:0.5, stop:0 rgba(115, 115, 115, 255), stop:1 rgba(62, 62, 62, 255));"
+            "border-left-color: qlineargradient(spread:pad, x1:0.6, y1:0.5, x2:0.4, y2:0.5, stop:0 rgba(115, 115, 115, 255), stop:1 rgba(62, 62, 62, 255));"
+            "border-bottom-color: rgb(58, 58, 58);"
+            "border-bottom-width: 1px;"
             "border-style: solid;"
-            "color: rgb(187, 187, 187);"
+            "color: rgb(255, 255, 255);"
             "padding: 6px;"
-            "background-color: qlineargradient(spread:pad, x1:0.523, y1:0.766545, x2:0.518, y2:0.148364, stop:0 rgba(30, 35, 37, 255), stop:1 rgba(50, 55, 57, 255));";
+            "background-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.5, y2:0, stop:0 rgba(77, 77, 77, 255), stop:1 rgba(97, 97, 97, 255));";
+
     this->initThreadSetup();
     this->move(QApplication::desktop()->screen()->rect().center() - this->rect().center());
     this->loadSessionFile("Session.txt");
@@ -88,7 +115,7 @@ bool BUMain::eventFilter(QObject *obj, QEvent *event)
         {
             ui->statusBar->showMessage("Select the files to copy",TOOLTIP_DURATION);
             ui->originButton->setStyleSheet(gsButtonStyle_enter);
-        }else if (event->type() == QEvent::Leave){
+        }else if (event->type() == QEvent::Leave || event->type() == QEvent::MouseButtonRelease){
             ui->originButton->setStyleSheet(gsButtonStyle_leave);
         }else if (event->type() == QEvent::MouseButtonPress){
             ui->originButton->setStyleSheet(gsButtonStyle_click);
@@ -99,7 +126,7 @@ bool BUMain::eventFilter(QObject *obj, QEvent *event)
         {
             ui->statusBar->showMessage("Show help dialog",TOOLTIP_DURATION);
             ui->helpButton->setStyleSheet(gsButtonStyle_enter);
-        }else if (event->type() == QEvent::Leave){
+        }else if (event->type() == QEvent::Leave || event->type() == QEvent::MouseButtonRelease){
             ui->helpButton->setStyleSheet(gsButtonStyle_leave);
         }else if (event->type() == QEvent::MouseButtonPress){
             ui->helpButton->setStyleSheet(gsButtonStyle_click);
@@ -110,7 +137,7 @@ bool BUMain::eventFilter(QObject *obj, QEvent *event)
         {
             ui->statusBar->showMessage("Open the log viewer",TOOLTIP_DURATION);
             ui->logViewerButton->setStyleSheet(gsButtonStyle_enter);
-        }else if (event->type() == QEvent::Leave){
+        }else if (event->type() == QEvent::Leave || event->type() == QEvent::MouseButtonRelease){
             ui->logViewerButton->setStyleSheet(gsButtonStyle_leave);
         }else if (event->type() == QEvent::MouseButtonPress){
             ui->logViewerButton->setStyleSheet(gsButtonStyle_click);
@@ -120,7 +147,7 @@ bool BUMain::eventFilter(QObject *obj, QEvent *event)
         {
             ui->statusBar->showMessage("Select target folder",TOOLTIP_DURATION);
             ui->targetButton->setStyleSheet(gsButtonStyle_enter);
-        }else if (event->type() == QEvent::Leave){
+        }else if (event->type() == QEvent::Leave || event->type() == QEvent::MouseButtonRelease){
             ui->targetButton->setStyleSheet(gsButtonStyle_leave);
         }else if (event->type() == QEvent::MouseButtonPress){
             ui->targetButton->setStyleSheet(gsButtonStyle_click);
@@ -131,7 +158,7 @@ bool BUMain::eventFilter(QObject *obj, QEvent *event)
         {
             ui->statusBar->showMessage("Start copy",TOOLTIP_DURATION);
             ui->backupButton->setStyleSheet(gsButtonStyle_enter);
-        }else if (event->type() == QEvent::Leave){
+        }else if (event->type() == QEvent::Leave || event->type() == QEvent::MouseButtonRelease){
             ui->backupButton->setStyleSheet(gsButtonStyle_leave);
         }else if (event->type() == QEvent::MouseButtonPress){
             ui->backupButton->setStyleSheet(gsButtonStyle_click);
@@ -141,10 +168,19 @@ bool BUMain::eventFilter(QObject *obj, QEvent *event)
         if (event->type() == QEvent::Enter){
             ui->statusBar->showMessage("Open the target folder",TOOLTIP_DURATION);
             ui->openTargetButton->setStyleSheet(gsButtonStyle_enter);
-        }else if (event->type() == QEvent::Leave){
+        }else if (event->type() == QEvent::Leave || event->type() == QEvent::MouseButtonRelease){
             ui->openTargetButton->setStyleSheet(gsButtonStyle_leave);
         }else if (event->type() == QEvent::MouseButtonPress){
             ui->openTargetButton->setStyleSheet(gsButtonStyle_click);
+        }
+    }else if(obj == (QObject*)ui->cancelButton){
+        if (event->type() == QEvent::Enter){
+            ui->statusBar->showMessage("Cancel copy",TOOLTIP_DURATION);
+            ui->cancelButton->setStyleSheet(gsButtonStyle_enter);
+        }else if (event->type() == QEvent::Leave || event->type() == QEvent::MouseButtonRelease){
+            ui->cancelButton->setStyleSheet(gsButtonStyle_leave);
+        }else if (event->type() == QEvent::MouseButtonPress){
+            ui->cancelButton->setStyleSheet(gsButtonStyle_click);
         }
     }
     return QWidget::eventFilter(obj, event);
@@ -203,6 +239,7 @@ void BUMain::installEventFilters()
     ui->openTargetButton->installEventFilter(this);
     ui->backupButton->installEventFilter(this);
     ui->fromFilesTextArea->installEventFilter(this);
+    ui->cancelButton->installEventFilter(this);
 }
 
 void BUMain::uninstallEventFilters()
@@ -337,9 +374,7 @@ void BUMain::main_slot_keepCopying()
     if(giProgress < gobPaths.length() && giKeep == 0){
         emit(main_signal_copyFile(gobPaths.at(giProgress),ui->toFilesTextField->text(),giKeep));
     }else{
-        QMessageBox::information(this,"Information","Operation executed");
         this->installEventFilters();
-        ui->overallCopyProgressBar->setValue(0);
         ui->statusBar->showMessage("Ready.");
     }
 
