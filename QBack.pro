@@ -15,10 +15,12 @@ TEMPLATE = app
 SOURCES += main.cpp\
         bumain.cpp \
     worker.cpp \
+    styles.cpp \
     logviewer.cpp
 
 HEADERS  += bumain.h \
     worker.h \
+    styles.h \
     logviewer.h
 
 FORMS    += bumain.ui \
