@@ -12,6 +12,8 @@ LogViewer::LogViewer(QWidget *parent) :
     ui->setupUi(this);
     giLine = 0;
     giLogCursorPos = 0;
+    giOcurrencesFound = 0;
+    gsFoundText = "";
     this->loadLogFile();
 
     QFile styleFile("style.qss");
@@ -61,8 +63,26 @@ void LogViewer::logger_slot_logInfo(QString info)
 
 void LogViewer::on_findLineEdit_returnPressed()
 {
-    if(!ui->plainTextEdit->find(ui->findLineEdit->text())){
+    if(gsFoundText != ui->findLineEdit->text()){
+        giOcurrencesFound = 0;
+        giLogCursorPos = 0;
         ui->plainTextEdit->moveCursor(QTextCursor::Start);
+        gsFoundText = ui->findLineEdit->text();
+        while(ui->plainTextEdit->find(ui->findLineEdit->text())){
+            giOcurrencesFound ++;
+        }
+        ui->plainTextEdit->moveCursor(QTextCursor::Start);
+        if(ui->plainTextEdit->find(ui->findLineEdit->text())) giLogCursorPos += 1;
+        ui->ocurrencesCounterLabel->setText(QString("%1/%2").arg(giLogCursorPos).arg(giOcurrencesFound));
+    }else{
+        if(!ui->plainTextEdit->find(ui->findLineEdit->text())){
+            ui->plainTextEdit->moveCursor(QTextCursor::Start);
+            giLogCursorPos = 0;
+            if(ui->plainTextEdit->find(ui->findLineEdit->text())) giLogCursorPos ++;
+        }else{
+            giLogCursorPos ++;
+        }
+        ui->ocurrencesCounterLabel->setText(QString("%1/%2").arg(giLogCursorPos).arg(giOcurrencesFound));
     }
 }
 
