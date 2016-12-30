@@ -1,6 +1,5 @@
 #include "bumain.h"
 #include "ui_bumain.h"
-#include "styles.h"
 #include <QDebug>
 #include <qdebug.h>
 #include <QThread>
@@ -29,12 +28,14 @@ BUMain::BUMain(QWidget *parent) :
     validatorFlag = 0;
     giKeep = 0;
     gobLogViewer = new LogViewer;
-    Styles *lobStyle = new Styles;
-
-    this->setStyleSheet(lobStyle->getElegantGnomeStyle());
     this->initThreadSetup();
     this->move(QApplication::desktop()->screen()->rect().center() - this->rect().center());
     this->loadSessionFile("Session.txt");
+
+    QFile styleFile("style.qss");
+    styleFile.open(QFile::ReadOnly);
+    QString StyleSheet = QLatin1String(styleFile.readAll());
+    this->setStyleSheet(StyleSheet);
 }
 
 bool BUMain::eventFilter(QObject *obj, QEvent *event)
