@@ -1,6 +1,5 @@
 #include "logviewer.h"
 #include "ui_logviewer.h"
-#include "styles.h"
 #include <QMessageBox>
 #include <QTextStream>
 #include <QDesktopServices>
@@ -14,9 +13,11 @@ LogViewer::LogViewer(QWidget *parent) :
     giLine = 0;
     giLogCursorPos = 0;
     this->loadLogFile();
-    Styles *lobStyle = new Styles;
-    this->setStyleSheet(lobStyle->getElegantGnomeStyle());
 
+    QFile styleFile("style.qss");
+    styleFile.open(QFile::ReadOnly);
+    QString StyleSheet = QLatin1String(styleFile.readAll());
+    this->setStyleSheet(StyleSheet);
 }
 
 LogViewer::~LogViewer()
@@ -53,6 +54,9 @@ void LogViewer::logger_slot_logInfo(QString info)
     out << info << "\r\n\n";
     file.close();
 
+    if(info.contains("ERROR")){
+        QMessageBox::critical(this,"Error","Some files could not be copied,\nSee the log for details.");
+    }
 }
 
 void LogViewer::on_findLineEdit_returnPressed()
