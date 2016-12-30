@@ -28,7 +28,8 @@ private:
     Ui::LogViewer *ui;
     int giLine;
     int giLogCursorPos;
-
+    int giOcurrencesFound;
+    QString gsFoundText;
     void loadLogFile();
 };
 
