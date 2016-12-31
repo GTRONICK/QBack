@@ -54,6 +54,13 @@ selection-color: rgb(255, 255, 255);</string>
         <widget class="QLineEdit" name="findLineEdit"/>
        </item>
        <item>
+        <widget class="QLabel" name="ocurrencesCounterLabel">
+         <property name="text">
+          <string>0/0</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QPushButton" name="okButton">
          <property name="text">
           <string>OK</string>
