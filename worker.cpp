@@ -14,6 +14,8 @@ Worker::Worker(QObject *parent) :
 {
     giTotalFiles = 0;
     giStopDirCopy = 0;
+    fileList = new QStringList;
+    dirList = new QStringList;
 }
 
 void Worker::setFileCounter(int value)
@@ -26,39 +28,27 @@ void Worker::worker_slot_setStopFlag(int value)
     giStopDirCopy = value;
 }
 
-void Worker::worker_Slot_copyFile(QString sourceFileOrFolder,QString destinationFolder,int giKeep)
+void Worker::worker_slot_createDirStructure(QString sourceFileOrFolder,QString destinationFolder,int giKeep)
 {
+    fileList->clear();
+    dirList->clear();
+    emit(worker_signal_statusInfo("Creating directory structure..."));
     if(giKeep == 0){
         if(!copyRecursively(sourceFileOrFolder,destinationFolder)){
             emit(worker_signal_logInfo("Folder can't be copied!"));
             emit(worker_signal_showMessage("Folder cannot be copied. It may already exist or you don't have enought permissions \nOpen the target and verify if it already exist"));
         }
 
+        emit(worker_signal_sendFileList(fileList,dirList));
         emit(worker_signal_keepCopying());
     }
+
+//    for(int i = 0; i < dirList->length(); i++) qDebug() << dirList->at(i);
 }
 
-void Worker::printToConsole(QString text)
+void Worker::worker_slot_copyFile(QString srcFilePath, QString tgtFilePath, int giKeep)
 {
-    qDebug() << text;
-}
-
-bool Worker::copyRecursively(QString srcFilePath, QString tgtFilePath)
-{
-    QFileInfo source(srcFilePath);
-    if(source.isDir()){
-        QDir leafDir(srcFilePath);
-        leafDir.setFilter(QDir::AllEntries | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System);
-        if(!leafDir.mkdir(tgtFilePath + QLatin1Char('/') + source.baseName()))
-            return false;
-
-        QDir sourceDir(srcFilePath);
-        QStringList fileNames = sourceDir.entryList(QDir::AllEntries | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System);
-        for(int index = 0; index < fileNames.length(); index ++){
-            copyRecursively(sourceDir.absolutePath() + "/" + fileNames.at(index),tgtFilePath + QLatin1Char('/') + source.baseName());
-        }
-
-    }else{
+    if(giKeep == 0){
         QString fileName;
 
         fileName = QFileInfo(srcFilePath).baseName()+"."+QFileInfo(srcFilePath).completeSuffix();
@@ -84,7 +74,35 @@ bool Worker::copyRecursively(QString srcFilePath, QString tgtFilePath)
             }
         }
 
+        emit(worker_signal_copyReady());
+    }
+}
+
+void Worker::printToConsole(QString text)
+{
+    qDebug() << text;
+}
+
+bool Worker::copyRecursively(QString srcFilePath, QString tgtFilePath)
+{
+    QFileInfo source(srcFilePath);
+    if(source.isDir()){
+        QDir leafDir(srcFilePath);
+        leafDir.setFilter(QDir::AllEntries | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System);
+        if(!leafDir.mkdir(tgtFilePath + QLatin1Char('/') + source.baseName()))
+            return false;
+
+        QDir sourceDir(srcFilePath);
+        QStringList fileNames = sourceDir.entryList(QDir::AllEntries | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System);
+        for(int index = 0; index < fileNames.length(); index ++){
+            dirList->append(tgtFilePath + QLatin1Char('/') + source.baseName());
+            copyRecursively(sourceDir.absolutePath() + "/" + fileNames.at(index),tgtFilePath + QLatin1Char('/') + source.baseName());
+        }
+    }
+    else{
+        fileList->append(srcFilePath);
     }
 
     return true;
+
 }
