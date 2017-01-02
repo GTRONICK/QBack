@@ -25,10 +25,11 @@ public:
     ~BUMain();
 
 signals:
-    void main_signal_copyFile(QString file,QString path,int giKeep);
+    void main_signal_createDirStructure(QString file,QString path,int giKeep);
     void main_startCopyFiles(QStringList files,QString path);
     void main_signal_saveLogToFile(bool value);
     void main_signal_setStopFlag(int value);
+    void main_signal_copyFile(QString file,QString path,int giKeep);
 
 private slots:
     void on_backupButton_clicked();
@@ -44,6 +45,8 @@ private slots:
     void main_slot_showMessage(QString message);
     void main_slot_keepCopying();
     void main_slot_setStatus(QString status);
+    void main_slot_receiveFileList(QStringList *files, QStringList *dirs);
+    void main_slot_copyReady();
 
 private:
     void initThreadSetup();
@@ -58,12 +61,16 @@ private:
     QFileDialog *dialog;
     QString targetFolder;
     QStringList gobPaths;
+    QStringList *fileList;
+    QStringList *dirList;
     LogViewer *gobLogViewer;
     int giKeep;
     int giCurrentPos;
     int giPreviousPos;
     int giFileCounter;
     int giProgress;
+    int giFileListProgress;
+    int giDirListProgress;
     int giTotalFiles;
     int giTotalFolders;
     int validatorFlag;
