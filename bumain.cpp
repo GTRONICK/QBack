@@ -1,14 +1,12 @@
 #include "bumain.h"
 #include "ui_bumain.h"
 #include <QDebug>
-#include <qdebug.h>
 #include <QThread>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QDesktopServices>
 #include <QApplication>
 #include <QDesktopWidget>
-#include <QScrollBar>
 
 BUMain::BUMain(QWidget *parent) :
     QMainWindow(parent),
@@ -23,11 +21,15 @@ BUMain::BUMain(QWidget *parent) :
     dialog = new QFileDialog(this);
     giCurrentPos = 0;
     giProgress = 0;
+    giFileListProgress = 0;
+    giDirListProgress = 0;
     giFileCounter = 0;
     giTotalFolders = 0;
     validatorFlag = 0;
     giKeep = 0;
     gobLogViewer = new LogViewer;
+    dirList = new QStringList;
+    fileList = new QStringList;
     this->initThreadSetup();
     this->move(QApplication::desktop()->screen()->rect().center() - this->rect().center());
     this->loadSessionFile("Session.txt");
@@ -85,12 +87,15 @@ void BUMain::initThreadSetup()
     worker = new Worker;
     worker->moveToThread(thread);
     connect(worker,SIGNAL(worker_Signal_updateProgressBar(int)),ui->overallCopyProgressBar,SLOT(setValue(int)),Qt::QueuedConnection);
-    connect(this,SIGNAL(main_signal_copyFile(QString,QString,int)),worker,SLOT(worker_Slot_copyFile(QString,QString,int)),Qt::QueuedConnection);
+    connect(this,SIGNAL(main_signal_createDirStructure(QString,QString,int)),worker,SLOT(worker_slot_createDirStructure(QString,QString,int)),Qt::QueuedConnection);
     connect(worker,SIGNAL(worker_signal_keepCopying()),this,SLOT(main_slot_keepCopying()),Qt::QueuedConnection);
     connect(worker,SIGNAL(worker_signal_logInfo(QString)),gobLogViewer,SLOT(logger_slot_logInfo(QString)),Qt::QueuedConnection);
     connect(worker,SIGNAL(worker_signal_statusInfo(QString)),this,SLOT(main_slot_setStatus(QString)));
     connect(worker,SIGNAL(worker_signal_showMessage(QString)),this,SLOT(main_slot_showMessage(QString)));
     connect(this,SIGNAL(main_signal_setStopFlag(int)),worker,SLOT(worker_slot_setStopFlag(int)));
+    connect(worker,SIGNAL(worker_signal_sendFileList(QStringList*,QStringList*)),this,SLOT(main_slot_receiveFileList(QStringList *,QStringList*)));
+    connect(worker,SIGNAL(worker_signal_copyReady()),this,SLOT(main_slot_copyReady()));
+    connect(this,SIGNAL(main_signal_copyFile(QString,QString,int)),worker,SLOT(worker_slot_copyFile(QString,QString,int)));
     connect(thread,SIGNAL(finished()),worker,SLOT(deleteLater()));
     connect(thread,SIGNAL(finished()),thread,SLOT(deleteLater()));
     thread->start();
@@ -160,6 +165,7 @@ void BUMain::on_backupButton_clicked()
 
     this->uninstallEventFilters();
     giProgress = 0;
+    giFileListProgress = 0;
     int recursiveAlertFlag = 0;
 
     worker->setFileCounter(0);
@@ -177,7 +183,7 @@ void BUMain::on_backupButton_clicked()
     if(recursiveAlertFlag == 0){
         ui->overallCopyProgressBar->setValue(0);
         ui->overallCopyProgressBar->setMaximum(giFileCounter > 0 ? giFileCounter:1);
-        emit(main_signal_copyFile(gobPaths.at(0),ui->toFilesTextField->text().trimmed(),giKeep));
+        emit(main_signal_createDirStructure(gobPaths.at(0),ui->toFilesTextField->text().trimmed(),giKeep));
     }else{
         QMessageBox::critical(this,"Recursive operation alert!","The target folder is the same source folder");
     }
@@ -257,20 +263,43 @@ void BUMain::on_helpButton_clicked()
 
 void BUMain::main_slot_keepCopying()
 {
+    qDebug() << giDirListProgress;
     giProgress ++;
     if(giProgress < gobPaths.length() && giKeep == 0){
-        emit(main_signal_copyFile(gobPaths.at(giProgress),ui->toFilesTextField->text(),giKeep));
+        emit(main_signal_createDirStructure(gobPaths.at(giProgress),ui->toFilesTextField->text(),giKeep));
+    }else if(giFileListProgress < fileList->length() && giKeep == 0){
+        emit(main_signal_copyFile(fileList->at(giFileListProgress),dirList->at(giDirListProgress),giKeep));
     }else{
         this->installEventFilters();
         ui->statusBar->showMessage("Ready.");
     }
+}
 
+void BUMain::main_slot_copyReady()
+{
+    giFileListProgress ++;
+    giDirListProgress --;
+    if(giFileListProgress < fileList->length() && giKeep == 0){
+        emit(main_signal_copyFile(fileList->at(giFileListProgress),dirList->at(giDirListProgress),giKeep));
+    }else{
+        this->installEventFilters();
+        ui->statusBar->showMessage("Ready.");
+    }
 }
 
 void BUMain::main_slot_setStatus(QString status)
 {
     ui->statusBar->showMessage(status);
 }
+
+void BUMain::main_slot_receiveFileList(QStringList *files, QStringList *dirs)
+{
+    this->fileList = files;
+    this->dirList = dirs;
+    giDirListProgress = dirList->length() - 1;
+//    for(int i = 0; i < files->length(); i ++) qDebug() << files->at(i);
+}
+
 
 void BUMain::on_openTargetButton_clicked()
 {
