@@ -374,6 +374,7 @@ void BUMain::on_logViewerButton_clicked()
 void BUMain::main_slot_showMessage(QString message)
 {
     QMessageBox::critical(this,"Error",message,QMessageBox::Ok,QMessageBox::Ok);
+    giCopyFileIndex = 0;
 }
 
 void BUMain::on_cancelButton_clicked()
