@@ -22,6 +22,8 @@ Worker::Worker(QObject *parent) :
 void Worker::setFileCounter(int value)
 {
     giTotalFiles = value;
+    gobDirList->clear();
+    gobFilesList->clear();
 }
 
 void Worker::worker_slot_setStopFlag(int value)
