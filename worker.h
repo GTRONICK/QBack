@@ -19,17 +19,22 @@ signals:
     void worker_signal_logInfo(QString info);
     void worker_signal_statusInfo(QString info);
     void worker_signal_showMessage(QString message);
+    void worker_signal_sendDirAndFileList(QStringList *, QStringList *);
+    void worker_signal_copyNextFile();
 
 public slots:
     void worker_slot_setStopFlag(int value);
-    void worker_Slot_copyFile(QString sourceFileOrFolder, QString destinationFolder, int giKeep);
-    void printToConsole(QString text);
+    void worker_slot_createDirs(QString sourceFileOrFolder, QString destinationFolder, int giKeep);
+    void worker_slot_readyToStartCopy();
+    void worker_slot_copyFile(QString srcFilePath, QString tgtFilePath);
 
 private:
     bool copyRecursively(QString srcFilePath, QString tgtFilePath);
     int giTotalFiles;
     int giStopDirCopy;
     QFile *gobFile;
+    QStringList *gobDirList;
+    QStringList *gobFilesList;
 };
 
 #endif // WORKER_H
