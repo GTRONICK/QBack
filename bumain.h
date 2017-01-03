@@ -25,11 +25,12 @@ public:
     ~BUMain();
 
 signals:
-    void main_signal_copyFile(QString file,QString path,int giKeep);
+    void main_signal_createDirs(QString file,QString path,int giKeep);
     void main_startCopyFiles(QStringList files,QString path);
     void main_signal_saveLogToFile(bool value);
     void main_signal_setStopFlag(int value);
     void main_signal_readyToStartCopy();
+    void main_signal_copyFile(QString file,QString path);
 
 private slots:
     void on_backupButton_clicked();
@@ -46,6 +47,7 @@ private slots:
     void main_slot_keepCopying();
     void main_slot_setStatus(QString status);
     void main_slot_receiveDirAndFileList(QStringList *dirs, QStringList *files);
+    void main_slot_copyNextFile();
 
 private:
     void initThreadSetup();
@@ -61,6 +63,8 @@ private:
     QString targetFolder;
     QStringList gobPaths;
     LogViewer *gobLogViewer;
+    QStringList *targetDirectories;
+    QStringList *sourceFiles;
     int giKeep;
     int giCurrentPos;
     int giPreviousPos;
@@ -69,6 +73,7 @@ private:
     int giTotalFiles;
     int giTotalFolders;
     int validatorFlag;
+    int giCopyFileIndex;
 };
 
 #endif // BUMAIN_H
