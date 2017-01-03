@@ -42,9 +42,10 @@ void Worker::worker_slot_createDirs(QString sourceFileOrFolder,QString destinati
         if(!copyRecursively(sourceFileOrFolder,destinationFolder)){
             emit(worker_signal_logInfo("Folder can't be copied!"));
             emit(worker_signal_showMessage("Folder cannot be copied. It may already exist or you don't have enought permissions \nOpen the target and verify if it already exist"));
+            this->worker_slot_setStopFlag(1);
+        }else{
+            emit(worker_signal_keepCopying());
         }
-
-        emit(worker_signal_keepCopying());
     }
 }
 
