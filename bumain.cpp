@@ -28,6 +28,10 @@ BUMain::BUMain(QWidget *parent) :
     validatorFlag = 0;
     giKeep = 0;
     gobLogViewer = new LogViewer;
+    targetDirectories = new QStringList;
+    sourceFiles = new QStringList;
+    giCopyFileIndex = 0;
+
     this->initThreadSetup();
     this->move(QApplication::desktop()->screen()->rect().center() - this->rect().center());
     this->loadSessionFile("Session.txt");
@@ -85,7 +89,7 @@ void BUMain::initThreadSetup()
     worker = new Worker;
     worker->moveToThread(thread);
     connect(worker,SIGNAL(worker_Signal_updateProgressBar(int)),ui->overallCopyProgressBar,SLOT(setValue(int)),Qt::QueuedConnection);
-    connect(this,SIGNAL(main_signal_copyFile(QString,QString,int)),worker,SLOT(worker_Slot_copyFile(QString,QString,int)),Qt::QueuedConnection);
+    connect(this,SIGNAL(main_signal_createDirs(QString,QString,int)),worker,SLOT(worker_slot_createDirs(QString,QString,int)),Qt::QueuedConnection);
     connect(worker,SIGNAL(worker_signal_keepCopying()),this,SLOT(main_slot_keepCopying()),Qt::QueuedConnection);
     connect(worker,SIGNAL(worker_signal_logInfo(QString)),gobLogViewer,SLOT(logger_slot_logInfo(QString)),Qt::QueuedConnection);
     connect(worker,SIGNAL(worker_signal_statusInfo(QString)),this,SLOT(main_slot_setStatus(QString)));
@@ -94,6 +98,8 @@ void BUMain::initThreadSetup()
 
     connect(this,SIGNAL(main_signal_readyToStartCopy()),worker,SLOT(worker_slot_readyToStartCopy()));
     connect(worker,SIGNAL(worker_signal_sendDirAndFileList(QStringList*,QStringList*)),this,SLOT(main_slot_receiveDirAndFileList(QStringList*,QStringList*)));
+    connect(this,SIGNAL(main_signal_copyFile(QString,QString)),worker,SLOT(worker_slot_copyFile(QString,QString)));
+    connect(worker,SIGNAL(worker_signal_copyNextFile()),this,SLOT(main_slot_copyNextFile()));
 
     connect(thread,SIGNAL(finished()),worker,SLOT(deleteLater()));
     connect(thread,SIGNAL(finished()),thread,SLOT(deleteLater()));
@@ -161,7 +167,7 @@ void BUMain::on_backupButton_clicked()
     emit(main_signal_setStopFlag(0));
     giKeep = 0;
     ui->toFilesTextField->setText(ui->toFilesTextField->text().trimmed());
-
+    giCopyFileIndex = 0;
     this->uninstallEventFilters();
     giProgress = 0;
     int recursiveAlertFlag = 0;
@@ -181,7 +187,7 @@ void BUMain::on_backupButton_clicked()
     if(recursiveAlertFlag == 0){
         ui->overallCopyProgressBar->setValue(0);
         ui->overallCopyProgressBar->setMaximum(giFileCounter > 0 ? giFileCounter:1);
-        emit(main_signal_copyFile(gobPaths.at(0),ui->toFilesTextField->text().trimmed(),giKeep));
+        emit(main_signal_createDirs(gobPaths.at(0),ui->toFilesTextField->text().trimmed(),giKeep));
     }else{
         QMessageBox::critical(this,"Recursive operation alert!","The target folder is the same source folder");
     }
@@ -263,10 +269,10 @@ void BUMain::main_slot_keepCopying()
 {
     giProgress ++;
     if(giProgress < gobPaths.length() && giKeep == 0){
-        emit(main_signal_copyFile(gobPaths.at(giProgress),ui->toFilesTextField->text(),giKeep));
+        emit(main_signal_createDirs(gobPaths.at(giProgress),ui->toFilesTextField->text(),giKeep));
     }else{
         this->installEventFilters();
-        qDebug() << "main: Scan finished, emmiting SIGNAL readyToStartCopy";
+        // qDebug() << "main: Scan finished, emmiting SIGNAL readyToStartCopy";
         emit(main_signal_readyToStartCopy());
         ui->statusBar->showMessage("Ready.");
     }
@@ -279,15 +285,32 @@ void BUMain::main_slot_setStatus(QString status)
 
 void BUMain::main_slot_receiveDirAndFileList(QStringList *dirs, QStringList *files)
 {
-    qDebug() << "main: sendDirAndFileList SIGNAL received, printing lists... ";
-    qDebug() << "Directories: ";
-    for(int i = 0; i < dirs->length(); i++){
-        qDebug() << dirs->at(i);
+    sourceFiles = files;
+    targetDirectories = dirs;
+
+    // qDebug() << "main: sendDirAndFileList SIGNAL received, printing lists... ";
+    // qDebug() << "Directories: ";
+    for(int i = 0; i < targetDirectories->length(); i++){
+        // qDebug() << targetDirectories->at(i);
     }
 
-    qDebug() << "Files: ";
-    for(int i = 0; i < files->length(); i++){
-        qDebug() << files->at(i);
+    // qDebug() << "Files: ";
+    for(int i = 0; i < sourceFiles->length(); i++){
+        // qDebug() << sourceFiles->at(i);
+    }
+
+    // qDebug() << "main: Emmiting signal copyFile with " << sourceFiles->at(giCopyFileIndex) << ", " << targetDirectories->at(giCopyFileIndex);
+    emit(main_signal_copyFile(sourceFiles->at(giCopyFileIndex),targetDirectories->at(giCopyFileIndex)));
+
+}
+
+void BUMain::main_slot_copyNextFile()
+{
+    // qDebug() << "main: copyNextFile SIGNAL received ";
+    giCopyFileIndex ++;
+    if(giKeep == 0 && giCopyFileIndex < sourceFiles->length()){
+        // qDebug() << "main: Emmiting SIGNAL copyFile with " << sourceFiles->at(giCopyFileIndex) << ", " << targetDirectories->at(giCopyFileIndex);
+        emit(main_signal_copyFile(sourceFiles->at(giCopyFileIndex),targetDirectories->at(giCopyFileIndex)));
     }
 }
 
@@ -357,11 +380,13 @@ void BUMain::main_slot_showMessage(QString message)
 
 void BUMain::on_cancelButton_clicked()
 {
-    emit(main_signal_setStopFlag(1));
-    giKeep = 1;
-    giProgress = 0;
-    ui->statusBar->showMessage("Cancelling...");
 
+    giKeep = 1;
+    ui->statusBar->showMessage("Cancelling...");
+    emit(main_signal_setStopFlag(1));
+    gobPaths.clear();
+    giProgress = 0;
+    giCopyFileIndex = 0;
 }
 
 void BUMain::closeEvent(QCloseEvent *event)
