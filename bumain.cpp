@@ -16,7 +16,7 @@ BUMain::BUMain(QWidget *parent) :
 {
 
     ui->setupUi(this);
-    ui->statusBar->showMessage("Version: " + QString::number(APP_VERSION),0);
+    ui->statusBar->showMessage("Version: " + QString(APP_VERSION),0);
     this->installEventFilters();
     ui->backupButton->setEnabled(false);
     ui->openTargetButton->setEnabled(false);
@@ -321,7 +321,8 @@ void BUMain::on_openTargetButton_clicked()
             ui->toFilesTextField->text() != "" &&
             !ui->toFilesTextField->text().startsWith(' ')){
 
-        if(!QDesktopServices::openUrl(ui->toFilesTextField->text().replace("\\","/"))){
+
+        if(!QDesktopServices::openUrl(QUrl::fromLocalFile(ui->toFilesTextField->text()))){
             QMessageBox::critical(this,"Error","Target folder \"" + ui->toFilesTextField->text() + "\" not found!");
         }
     }
