@@ -56,7 +56,7 @@ void LogViewer::logger_slot_logInfo(QString info)
     out << info << "\r\n\n";
     file.close();
 
-    if(info.contains("ERROR")){
+    if(info.contains(">> ERROR!")){
         QMessageBox::critical(this,"Error","Some files could not be copied,\nSee the log for details.");
     }
 }
