@@ -29,6 +29,7 @@ LogViewer::~LogViewer()
 
 void LogViewer::on_clearButton_clicked()
 {
+    ui->ocurrencesCounterLabel->setText("0/0");
     ui->plainTextEdit->clear();
     QFile file("backup.log");
     if(file.exists()){
