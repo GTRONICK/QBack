@@ -59,8 +59,3 @@ C. Copying several files:
 3. make clean
 
 Alternatively, you can use QTCreator 5.7+ to load the project, and compile it for your distribution and architecture.
-
-3. HOW TO CONTRIBUTE
-------------------------------------------------
-
-Do you want to contribute to the code? Sure!, leave your contact info at the contact page at gtronick.com and submit the form, or send an email to contact@gtronick.com.
