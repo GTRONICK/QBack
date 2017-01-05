@@ -2,7 +2,7 @@
 #define BUMAIN_H
 
 #define TOOLTIP_DURATION 2000
-#define APP_VERSION 030117
+#define APP_VERSION "030117"
 #include <QMainWindow>
 #include <QThread>
 #include <QFileDialog>
