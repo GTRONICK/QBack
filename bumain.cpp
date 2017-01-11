@@ -162,6 +162,7 @@ bool BUMain::saveSessionToFile(QString filePath)
 
 void BUMain::on_backupButton_clicked()
 {
+    this->ui->backupButton->setEnabled(false);
     emit(main_signal_setStopFlag(0));
     giKeep = 0;
     ui->toFilesTextField->setText(ui->toFilesTextField->text().trimmed());
@@ -309,6 +310,9 @@ void BUMain::main_slot_copyNextFile()
     if(giKeep == 0 && giCopyFileIndex < sourceFiles->length()){
         // qDebug() << "main: Emmiting SIGNAL copyFile with " << sourceFiles->at(giCopyFileIndex) << ", " << targetDirectories->at(giCopyFileIndex);
         emit(main_signal_copyFile(sourceFiles->at(giCopyFileIndex),targetDirectories->at(giCopyFileIndex)));
+    }else{
+        // qDebug() << "Copy finished.";
+        this->ui->backupButton->setEnabled(true);
     }
 }
 
