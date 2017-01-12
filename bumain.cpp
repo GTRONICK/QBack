@@ -321,6 +321,7 @@ void BUMain::main_slot_copyNextFile()
         emit(main_signal_copyFile(sourceFiles->at(giCopyFileIndex),targetDirectories->at(giCopyFileIndex)));
     }else{
         // qDebug() << "Copy finished.";
+        gbBackcupButtonPressed = false;
         this->ui->backupButton->setText("&Backup!");
         this->ui->backupButton->setIcon(QIcon(":/icons/backupButton.png"));
     }
