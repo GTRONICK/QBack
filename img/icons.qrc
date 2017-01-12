@@ -8,5 +8,6 @@
         <file>openFolder.png</file>
         <file>openTargetFolder.png</file>
         <file>splash.PNG</file>
+        <file>cancelCopy.png</file>
     </qresource>
 </RCC>
