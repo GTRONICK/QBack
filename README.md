@@ -19,12 +19,12 @@ B. Copying several folders recursively:
 
 1. Open your file explorer and copy the folder paths to the black text box, end each folder path with comma "," , for example: 
 
-  In Linux: 
+** In Linux: 
 
   /home/$USER/Downloads, 
   /home/$USER/FilesToCopy,
   
-  In Windows:
+** In Windows:
   
   D:\DocumentsToCopy\Folder,
   C:\Documents and settings\MyAppData\Game,
