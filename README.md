@@ -10,18 +10,18 @@ Copy Utility lets you copy files from several directories to a folder. You can a
 
 A. Copying one folder recursively:
 
-1. Click on the "Origin" button to choose the origin folder.
-2. Click on the "Target" button to choose the destination folder where the files will be copied.
-3. If you want to inspect the target folder before copy, click on "Open target".
-4. Click on the "Backup button" to start the copy.
+  1. Click on the "Origin" button to choose the origin folder.
+  2. Click on the "Target" button to choose the destination folder where the files will be copied.
+  3. If you want to inspect the target folder before copy, click on "Open target".
+  4. Click on the "Backup button" to start the copy.
 
 B. Copying several folders recursively:
 
-1. Open your file explorer and copy the folder paths to the black text box, end each folder path with comma "," , for example: 
+  1. Open your file explorer and copy the folder paths to the black text box, end each folder path with comma "," , for example: 
 
 ### In Linux: 
 
-  /home/$USER/Downloads, 
+  /home/$USER/Downloads,
   /home/$USER/FilesToCopy,
   
 ### In Windows:
@@ -29,13 +29,13 @@ B. Copying several folders recursively:
   D:\DocumentsToCopy\Folder,
   C:\Documents and settings\MyAppData\Game,
 
-2. Click on the "target" button to choose the destination folder.
-3. If you want to inspect the target folder before copy, click on "Open target".
-4. Click on the "Backup button" to start the copy.
+  2. Click on the "target" button to choose the destination folder.
+  3. If you want to inspect the target folder before copy, click on "Open target".
+  4. Click on the "Backup button" to start the copy.
 
 C. Copying several files:
 
-1. Open your file explorer and copy the file paths to the black text box, end each file path with comma "," , for example:
+  1. Open your file explorer and copy the file paths to the black text box, end each file path with comma "," , for example:
 
 ### In Linux:
 
@@ -47,15 +47,15 @@ C. Copying several files:
   D:\DocumentsToCopy\Folder\WordDocument.docx,
   C:\Documents and settings\MyAppData\Game\Textures.mod,
 
-2. Click on the "target" button to choose the destination folder.
-3. If you want to inspect the target folder before copy, click on "Open target".
-4. Click on the "Backup button" to start the copy.
+  2. Click on the "target" button to choose the destination folder.
+  3. If you want to inspect the target folder before copy, click on "Open target".
+  4. Click on the "Backup button" to start the copy.
 
 2. HOW TO BUILD FROM SOURCE
 ------------------------------------------------
 
-1. qmake QBack.pro
-2. make all -j4
-3. make clean
+  1. qmake QBack.pro
+  2. make all -j4
+  3. make clean
 
 Alternatively, you can use QTCreator 5.7+ to load the project, and compile it for your distribution and architecture.
