@@ -31,6 +31,7 @@ BUMain::BUMain(QWidget *parent) :
     targetDirectories = new QStringList;
     sourceFiles = new QStringList;
     giCopyFileIndex = 0;
+    gbBackcupButtonPressed = false;
 
     this->initThreadSetup();
     this->move(QApplication::desktop()->screen()->rect().center() - this->rect().center());
@@ -68,7 +69,7 @@ bool BUMain::eventFilter(QObject *obj, QEvent *event)
         if (event->type() == QEvent::Enter){
             ui->statusBar->showMessage("Open the target folder",TOOLTIP_DURATION);
         }
-    }else if(obj == (QObject*)ui->cancelButton){
+    }else if(obj == (QObject*)ui->backupButton && gbBackcupButtonPressed == true){
         if (event->type() == QEvent::Enter){
             ui->statusBar->showMessage("Cancel copy",TOOLTIP_DURATION);
         }
@@ -134,7 +135,6 @@ void BUMain::installEventFilters()
     ui->openTargetButton->installEventFilter(this);
     ui->backupButton->installEventFilter(this);
     ui->fromFilesTextArea->installEventFilter(this);
-    ui->cancelButton->installEventFilter(this);
 }
 
 void BUMain::uninstallEventFilters()
@@ -162,33 +162,42 @@ bool BUMain::saveSessionToFile(QString filePath)
 
 void BUMain::on_backupButton_clicked()
 {
-    this->ui->backupButton->setEnabled(false);
-    emit(main_signal_setStopFlag(0));
-    giKeep = 0;
-    ui->toFilesTextField->setText(ui->toFilesTextField->text().trimmed());
-    giCopyFileIndex = 0;
-    this->uninstallEventFilters();
-    giProgress = 0;
-    int recursiveAlertFlag = 0;
+    if(gbBackcupButtonPressed == false){
+        gbBackcupButtonPressed = true;
+        this->ui->backupButton->setText("Ca&ncel");
+        this->ui->backupButton->setIcon(QIcon(":/icons/cancelCopy.png"));
+        emit(main_signal_setStopFlag(0));
+        giKeep = 0;
+        ui->toFilesTextField->setText(ui->toFilesTextField->text().trimmed());
+        giCopyFileIndex = 0;
+        this->uninstallEventFilters();
+        giProgress = 0;
+        int recursiveAlertFlag = 0;
 
-    worker->setFileCounter(0);
+        worker->setFileCounter(0);
 
-    gobPaths = ui->fromFilesTextArea->toPlainText().split(",");
-    gobPaths.removeAt(gobPaths.length() - 1);
-    for(int i = 0; i < gobPaths.length(); i++){
-        gobPaths.replace(i,gobPaths.at(i).trimmed());
-        if(gobPaths.at(i) == ui->toFilesTextField->text().trimmed()){
-            recursiveAlertFlag = 1;
-            break;
+        gobPaths = ui->fromFilesTextArea->toPlainText().split(",");
+        gobPaths.removeAt(gobPaths.length() - 1);
+        for(int i = 0; i < gobPaths.length(); i++){
+            gobPaths.replace(i,gobPaths.at(i).trimmed());
+            if(gobPaths.at(i) == ui->toFilesTextField->text().trimmed()){
+                recursiveAlertFlag = 1;
+                break;
+            }
         }
-    }
 
-    if(recursiveAlertFlag == 0){
-        ui->overallCopyProgressBar->setValue(0);
-        ui->overallCopyProgressBar->setMaximum(giFileCounter > 0 ? giFileCounter:1);
-        emit(main_signal_createDirs(gobPaths.at(0),ui->toFilesTextField->text().trimmed(),giKeep));
+        if(recursiveAlertFlag == 0){
+            ui->overallCopyProgressBar->setValue(0);
+            ui->overallCopyProgressBar->setMaximum(giFileCounter > 0 ? giFileCounter:1);
+            emit(main_signal_createDirs(gobPaths.at(0),ui->toFilesTextField->text().trimmed(),giKeep));
+        }else{
+            QMessageBox::critical(this,"Recursive operation alert!","The target folder is the same source folder");
+        }
     }else{
-        QMessageBox::critical(this,"Recursive operation alert!","The target folder is the same source folder");
+        gbBackcupButtonPressed = false;
+        this->ui->backupButton->setText("&Backup!");
+        this->ui->backupButton->setIcon(QIcon(":/icons/backupButton.png"));
+        on_cancelButton_clicked();
     }
 }
 
@@ -312,7 +321,8 @@ void BUMain::main_slot_copyNextFile()
         emit(main_signal_copyFile(sourceFiles->at(giCopyFileIndex),targetDirectories->at(giCopyFileIndex)));
     }else{
         // qDebug() << "Copy finished.";
-        this->ui->backupButton->setEnabled(true);
+        this->ui->backupButton->setText("&Backup!");
+        this->ui->backupButton->setIcon(QIcon(":/icons/backupButton.png"));
     }
 }
 
@@ -379,6 +389,9 @@ void BUMain::on_logViewerButton_clicked()
 void BUMain::main_slot_showMessage(QString message)
 {
     QMessageBox::critical(this,"Error",message,QMessageBox::Ok,QMessageBox::Ok);
+    this->ui->backupButton->setText("&Backup!");
+    this->ui->backupButton->setIcon(QIcon(":/icons/backupButton.png"));
+    gbBackcupButtonPressed = false;
     giCopyFileIndex = 0;
 }
 
