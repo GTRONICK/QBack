@@ -2,7 +2,7 @@
 #define BUMAIN_H
 
 #define TOOLTIP_DURATION 2000
-#define APP_VERSION "030117"
+#define APP_VERSION "110117"
 #include <QMainWindow>
 #include <QThread>
 #include <QFileDialog>
@@ -36,7 +36,6 @@ private slots:
     void on_backupButton_clicked();
     void on_originButton_clicked();
     void on_targetButton_clicked();
-    void on_cancelButton_clicked();
     void on_toFilesTextField_textChanged();
     void on_helpButton_clicked();
     void on_openTargetButton_clicked();
@@ -56,6 +55,7 @@ private:
     void uninstallEventFilters();
     bool saveSessionToFile(QString filePath);
     void loadSessionFile(QString asFilePath);
+    void on_cancelButton_clicked();
     Ui::BUMain *ui;
     QThread *thread;
     Worker *worker;
@@ -74,6 +74,7 @@ private:
     int giTotalFolders;
     int validatorFlag;
     int giCopyFileIndex;
+    bool gbBackcupButtonPressed;
 };
 
 #endif // BUMAIN_H
