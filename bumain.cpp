@@ -100,6 +100,7 @@ void BUMain::initThreadSetup()
     connect(worker,SIGNAL(worker_signal_sendDirAndFileList(QStringList*,QStringList*)),this,SLOT(main_slot_receiveDirAndFileList(QStringList*,QStringList*)));
     connect(this,SIGNAL(main_signal_copyFile(QString,QString)),worker,SLOT(worker_slot_copyFile(QString,QString)));
     connect(worker,SIGNAL(worker_signal_copyNextFile()),this,SLOT(main_slot_copyNextFile()));
+    connect(this,SIGNAL(main_signal_logInfo(QString)),gobLogViewer,SLOT(logger_slot_logInfo(QString)));
     connect(thread,SIGNAL(finished()),worker,SLOT(deleteLater()));
     connect(thread,SIGNAL(finished()),thread,SLOT(deleteLater()));
     thread->start();
@@ -163,6 +164,7 @@ bool BUMain::saveSessionToFile(QString filePath)
 void BUMain::on_backupButton_clicked()
 {
     if(gbBackcupButtonPressed == false){
+        emit(main_signal_logInfo("\n ----- Copy Started ----- \n"));
         gbBackcupButtonPressed = true;
         this->ui->backupButton->setText("Ca&ncel");
         this->ui->backupButton->setIcon(QIcon(":/icons/cancelCopy.png"));
@@ -194,6 +196,7 @@ void BUMain::on_backupButton_clicked()
             QMessageBox::critical(this,"Recursive operation alert!","The target folder is the same source folder");
         }
     }else{
+        emit(main_signal_logInfo("\n ----- Copy Cancelled ----- \n"));
         gbBackcupButtonPressed = false;
         this->ui->backupButton->setText("&Backup!");
         this->ui->backupButton->setIcon(QIcon(":/icons/backupButton.png"));
@@ -295,18 +298,6 @@ void BUMain::main_slot_receiveDirAndFileList(QStringList *dirs, QStringList *fil
 {
     sourceFiles = files;
     targetDirectories = dirs;
-
-    // qDebug() << "main: sendDirAndFileList SIGNAL received, printing lists... ";
-    // qDebug() << "Directories: ";
-    for(int i = 0; i < targetDirectories->length(); i++){
-        // qDebug() << targetDirectories->at(i);
-    }
-
-    // qDebug() << "Files: ";
-    for(int i = 0; i < sourceFiles->length(); i++){
-        // qDebug() << sourceFiles->at(i);
-    }
-
     // qDebug() << "main: Emmiting signal copyFile with " << sourceFiles->at(giCopyFileIndex) << ", " << targetDirectories->at(giCopyFileIndex);
     emit(main_signal_copyFile(sourceFiles->at(giCopyFileIndex),targetDirectories->at(giCopyFileIndex)));
 
