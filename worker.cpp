@@ -79,11 +79,11 @@ void Worker::worker_slot_copyFile(QString srcFilePath, QString tgtFilePath)
         if(gobFile->copy(tgtFilePath+"/"+fileName)){
         QApplication::processEvents();
             giTotalFiles ++;
-            emit(worker_signal_logInfo(QDateTime::currentDateTime().toString() + " >> File: " + srcFilePath + " << copied to: " + tgtFilePath));
+            emit(worker_signal_logInfo(QDateTime::currentDateTime().toString() + ":  " + "#" + QString::number(giTotalFiles) + "  " + srcFilePath + "   copied to:   " + tgtFilePath));
             emit(worker_Signal_updateProgressBar(giTotalFiles));
         }
         else{
-            emit(worker_signal_logInfo(QDateTime::currentDateTime().toString() + " >> ERROR! File: " + fileName + " << has not been copied!"));
+            emit(worker_signal_logInfo(QDateTime::currentDateTime().toString() + " ERROR! File: " + fileName + " has not been copied!"));
         }
 
         // qDebug() << "worker: Emmiting SIGNAL copyNextFile";
