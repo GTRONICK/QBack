@@ -31,6 +31,7 @@ signals:
     void main_signal_setStopFlag(int value);
     void main_signal_readyToStartCopy();
     void main_signal_copyFile(QString file,QString path);
+    void main_signal_logInfo(QString info);
 
 private slots:
     void on_backupButton_clicked();
