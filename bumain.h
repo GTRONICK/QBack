@@ -38,7 +38,6 @@ private slots:
     void on_originButton_clicked();
     void on_targetButton_clicked();
     void on_toFilesTextField_textChanged();
-    void on_helpButton_clicked();
     void on_openTargetButton_clicked();
     void on_fromFilesTextArea_textChanged();
     void on_logViewerButton_clicked();
@@ -48,6 +47,16 @@ private slots:
     void main_slot_setStatus(QString status);
     void main_slot_receiveDirAndFileList(QStringList *dirs, QStringList *files);
     void main_slot_copyNextFile();
+
+    void on_actionQuit_triggered();
+
+    void on_actionAbout_triggered();
+
+    void on_actionOpen_session_triggered();
+
+    void on_actionLoad_theme_triggered();
+
+    void on_actionSave_session_triggered();
 
 private:
     void initThreadSetup();
