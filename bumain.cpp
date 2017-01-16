@@ -223,6 +223,7 @@ void BUMain::on_originButton_clicked()
 
 void BUMain::on_targetButton_clicked()
 {
+    targetFolder = "";
     dialog->setFileMode(QFileDialog::Directory);
     dialog->setOption(QFileDialog::ShowDirsOnly,true);
     if(dialog->exec()){
@@ -429,6 +430,7 @@ void BUMain::on_actionAbout_triggered()
 
 void BUMain::on_actionOpen_session_triggered()
 {
+    targetFolder = "";
     targetFolder = QFileDialog::getOpenFileName(this, tr("Open Session"),
                                                     "",
                                                     tr("Session files (*.qbs);;All files(*.*)"));
@@ -440,6 +442,7 @@ void BUMain::on_actionOpen_session_triggered()
 
 void BUMain::on_actionLoad_theme_triggered()
 {
+    targetFolder = "";
     targetFolder = QFileDialog::getOpenFileName(this, tr("Open Style"),
                                                     "",
                                                     tr("Stylesheets (*.qss);;All files(*.*)"));
@@ -454,7 +457,7 @@ void BUMain::on_actionLoad_theme_triggered()
 
 void BUMain::on_actionSave_session_triggered()
 {
-
+    targetFolder = "";
     targetFolder = QFileDialog::getSaveFileName(this, tr("Save session"), "", tr("Session files (*.qbs);;All files(*.*)"));
 
     if(targetFolder != NULL && targetFolder != ""){
