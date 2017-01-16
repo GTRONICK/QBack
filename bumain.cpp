@@ -223,7 +223,7 @@ void BUMain::on_originButton_clicked()
 
 void BUMain::on_targetButton_clicked()
 {
-    targetFolder = "";
+    targetFolder = ui->toFilesTextField->text();
     dialog->setFileMode(QFileDialog::Directory);
     dialog->setOption(QFileDialog::ShowDirsOnly,true);
     if(dialog->exec()){
