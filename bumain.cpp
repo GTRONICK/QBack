@@ -35,7 +35,7 @@ BUMain::BUMain(QWidget *parent) :
 
     this->initThreadSetup();
     this->move(QApplication::desktop()->screen()->rect().center() - this->rect().center());
-    this->loadSessionFile("Session.txt");
+    this->loadSessionFile("Session.qbs");
 
     QFile styleFile("style.qss");
     styleFile.open(QFile::ReadOnly);
@@ -48,10 +48,6 @@ bool BUMain::eventFilter(QObject *obj, QEvent *event)
     if (obj == (QObject*)ui->originButton) {
         if (event->type() == QEvent::Enter){
             ui->statusBar->showMessage("Select the files to copy",TOOLTIP_DURATION);
-        }
-    }else if(obj == (QObject*)ui->helpButton){
-        if (event->type() == QEvent::Enter){
-            ui->statusBar->showMessage("Show help dialog",TOOLTIP_DURATION);
         }
     }else if(obj == (QObject*)ui->logViewerButton){
         if (event->type() == QEvent::Enter){
@@ -130,7 +126,6 @@ int BUMain::countAllFiles(QString path)
 void BUMain::installEventFilters()
 {
     ui->originButton->installEventFilter(this);
-    ui->helpButton->installEventFilter(this);
     ui->targetButton->installEventFilter(this);
     ui->logViewerButton->installEventFilter(this);
     ui->openTargetButton->installEventFilter(this);
@@ -141,7 +136,6 @@ void BUMain::installEventFilters()
 void BUMain::uninstallEventFilters()
 {
     ui->originButton->removeEventFilter(this);
-    ui->helpButton->removeEventFilter(this);
     ui->targetButton->removeEventFilter(this);
     ui->logViewerButton->removeEventFilter(this);
     ui->openTargetButton->removeEventFilter(this);
@@ -259,21 +253,6 @@ void BUMain::on_toFilesTextField_textChanged()
         ui->backupButton->setEnabled(false);
         ui->openTargetButton->setEnabled(false);
     }
-}
-
-void BUMain::on_helpButton_clicked()
-{
-    const char *helpText = ("<h2>QBack</h2>"
-               "<p>Copyright &copy; 2016 GTRONICK."
-               "<p>Enter each file path ended with comma ( , ) and without trailing spaces."
-               "For example:"
-               "<p>C:\\File.txt,"
-               "<br>C:\\Documents and settings\\Document.pdf,"
-               "<br>/home/user/Documents/script.sh,"
-               "<p>You can paste clipboard contents here, but be sure to end each file path with comma");
-
-    QMessageBox::about(this, tr("About Backup Utility"),
-    tr(helpText));
 }
 
 void BUMain::main_slot_keepCopying()
@@ -400,7 +379,7 @@ void BUMain::on_cancelButton_clicked()
 
 void BUMain::closeEvent(QCloseEvent *event)
 {
-    if(this->saveSessionToFile("Session.txt"))
+    if(this->saveSessionToFile("Session.qbs"))
         event->accept();
     else
         event->ignore();
@@ -410,6 +389,7 @@ void BUMain::loadSessionFile(QString asFilePath)
 {
     QFile file(asFilePath);
     if(file.exists()){
+        ui->fromFilesTextArea->clear();
         if (!file.open(QIODevice::ReadWrite | QIODevice::Text))
             return;
 
@@ -423,5 +403,61 @@ void BUMain::loadSessionFile(QString asFilePath)
               ui->toFilesTextField->setText(line.replace("--",""));
           }
        }
+    }
+}
+
+void BUMain::on_actionQuit_triggered()
+{
+    this->saveSessionToFile("Session.qbs");
+    QApplication::quit();
+}
+
+void BUMain::on_actionAbout_triggered()
+{
+    const char *helpText = ("<h2>QBack</h2>"
+               "<p>Copyright &copy; 2016 GTRONICK."
+               "<p>Enter each file path ended with comma ( , ) and without trailing spaces."
+               "For example:"
+               "<p>C:\\File.txt,"
+               "<br>C:\\Documents and settings\\Document.pdf,"
+               "<br>/home/user/Documents/script.sh,"
+               "<p>You can paste clipboard contents here, but be sure to end each file path with comma");
+
+    QMessageBox::about(this, tr("About QBack 1.1.0"),
+    tr(helpText));
+}
+
+void BUMain::on_actionOpen_session_triggered()
+{
+    targetFolder = QFileDialog::getOpenFileName(this, tr("Open Session"),
+                                                    "",
+                                                    tr("Session files (*.qbs);;All files(*.*)"));
+
+    if(targetFolder != NULL && targetFolder != ""){
+        loadSessionFile(targetFolder);
+    }
+}
+
+void BUMain::on_actionLoad_theme_triggered()
+{
+    targetFolder = QFileDialog::getOpenFileName(this, tr("Open Style"),
+                                                    "",
+                                                    tr("Stylesheets (*.qss);;All files(*.*)"));
+
+    if(targetFolder != NULL && targetFolder != ""){
+        QFile styleFile(targetFolder);
+        styleFile.open(QFile::ReadOnly);
+        QString StyleSheet = QLatin1String(styleFile.readAll());
+        this->setStyleSheet(StyleSheet);
+    }
+}
+
+void BUMain::on_actionSave_session_triggered()
+{
+
+    targetFolder = QFileDialog::getSaveFileName(this, tr("Save session"), "", tr("Session files (*.qbs);;All files(*.*)"));
+
+    if(targetFolder != NULL && targetFolder != ""){
+        saveSessionToFile(targetFolder);
     }
 }
