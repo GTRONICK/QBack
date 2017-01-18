@@ -1,9 +1,9 @@
 # QBack
 A simple bakcup utility.
 
-01 September 2016.
+![QBack_GUI](https://5c57bd3a-a-62cb3a1a-s-sites.googlegroups.com/site/gtronick/QBack_v1.1.0.PNG)
 
-Copy Utility lets you copy files from several directories to a folder. You can also specify only files, or only directories to copy. Works on Windows and Linux (Not tested on MAC OS).
+QBack lets you copy files from several directories to a folder. You can also specify only files, or only directories to copy. Works on Windows and Linux (Not tested on MAC OS).
 
 1. HOW TO USE
 -------------------------------
