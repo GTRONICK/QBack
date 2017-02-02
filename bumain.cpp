@@ -16,7 +16,6 @@ BUMain::BUMain(QWidget *parent) :
 {
 
     ui->setupUi(this);
-    ui->statusBar->showMessage("Version: " + QString(APP_VERSION),0);
     this->installEventFilters();
     ui->backupButton->setEnabled(false);
     ui->openTargetButton->setEnabled(false);
@@ -28,6 +27,7 @@ BUMain::BUMain(QWidget *parent) :
     validatorFlag = 0;
     giKeep = 0;
     gobLogViewer = new LogViewer;
+    gobSearchDialog = new SearchDialog(this);
     targetDirectories = new QStringList;
     sourceFiles = new QStringList;
     giCopyFileIndex = 0;
@@ -41,6 +41,8 @@ BUMain::BUMain(QWidget *parent) :
     styleFile.open(QFile::ReadOnly);
     QString StyleSheet = QLatin1String(styleFile.readAll());
     this->setStyleSheet(StyleSheet);
+
+    gobSearchDialog->setGlobalText(ui->fromFilesTextArea);
 }
 
 bool BUMain::eventFilter(QObject *obj, QEvent *event)
@@ -97,30 +99,14 @@ void BUMain::initThreadSetup()
     connect(this,SIGNAL(main_signal_copyFile(QString,QString)),worker,SLOT(worker_slot_copyFile(QString,QString)));
     connect(worker,SIGNAL(worker_signal_copyNextFile()),this,SLOT(main_slot_copyNextFile()));
     connect(this,SIGNAL(main_signal_logInfo(QString)),gobLogViewer,SLOT(logger_slot_logInfo(QString)));
+    connect(gobSearchDialog,SIGNAL(search_signal_resetCursor()),this,SLOT(main_slot_resetCursor()));
+    connect(this,SIGNAL(main_signal_scanFolders(QStringList)),worker,SLOT(worker_slot_scanFolders(QStringList)));
+    connect(worker,SIGNAL(worker_signal_setTotalFilesAndFolders(int,int)),this,SLOT(main_slot_setTotalFilesAndFolders(int,int)));
+    connect(worker,SIGNAL(worker_signal_workerDone()), this,SLOT(main_slot_workerDone()));
     connect(thread,SIGNAL(finished()),worker,SLOT(deleteLater()));
     connect(thread,SIGNAL(finished()),thread,SLOT(deleteLater()));
     thread->start();
 
-}
-
-int BUMain::countAllFiles(QString path)
-{
-    int total = 0;
-
-    QFileInfo source(path);
-    if(source.isDir()){
-        giTotalFolders ++;
-        QDir lobDir(path);
-        lobDir.setFilter(QDir::AllEntries | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System);
-        QStringList files = lobDir.entryList();
-
-        total = lobDir.count();
-        for(int index = 0; index < files.length(); index++){
-            total += countAllFiles(lobDir.absolutePath() + QLatin1Char('/') + files.at(index));
-        }
-    }
-
-    return total;
 }
 
 void BUMain::installEventFilters()
@@ -202,7 +188,6 @@ void BUMain::on_originButton_clicked()
 {
     targetFolder.clear();
     giTotalFolders = 0;
-    giTotalFiles = 0;
 
     dialog->setFileMode(QFileDialog::Directory);
     dialog->setOption(QFileDialog::ShowDirsOnly,true);
@@ -223,7 +208,6 @@ void BUMain::on_originButton_clicked()
 
 void BUMain::on_targetButton_clicked()
 {
-    targetFolder = ui->toFilesTextField->text();
     dialog->setFileMode(QFileDialog::Directory);
     dialog->setOption(QFileDialog::ShowDirsOnly,true);
     if(dialog->exec()){
@@ -298,6 +282,32 @@ void BUMain::main_slot_copyNextFile()
     }
 }
 
+void BUMain::main_slot_resetCursor()
+{
+    //qDebug() << "main: resetCursor SIGNAL Recevied";
+    ui->fromFilesTextArea->moveCursor(QTextCursor::Start);
+}
+
+void BUMain::main_slot_setTotalFilesAndFolders(int aiFileCounter,int aiFolderCounter)
+{
+    giTotalFolders = aiFolderCounter;
+    giFileCounter = aiFileCounter;
+
+    ui->fileCountLabel->setText(giFileCounter > 0 ? QString::number(giFileCounter):QString::number(0));
+    ui->folderCountLabel->setText(giTotalFolders > 0 ? QString::number(giTotalFolders):QString::number(0));
+
+}
+
+void BUMain::main_slot_workerDone()
+{
+    this->installEventFilters();
+    if(ui->toFilesTextField->text() != NULL && !(ui->toFilesTextField->text() == "") && giFileCounter > 0){
+        ui->backupButton->setEnabled(true);
+    }else{
+        ui->backupButton->setEnabled(false);
+    }
+}
+
 void BUMain::on_openTargetButton_clicked()
 {
 
@@ -316,40 +326,20 @@ void BUMain::on_openTargetButton_clicked()
 
 void BUMain::on_fromFilesTextArea_textChanged()
 {
+    ui->backupButton->setEnabled(false);
+
     ui->overallCopyProgressBar->setValue(0);
 
     giTotalFolders = 0;
-    int index = 0;
-    int fileCount = 0;
-    int notFolderCount = 0;
-    int counted = 0;
-
 
     QString lsAreaText = ui->fromFilesTextArea->toPlainText();
     if(lsAreaText.lastIndexOf(",") != giCurrentPos){
         giCurrentPos = lsAreaText.lastIndexOf(",");
-        QStringList files = lsAreaText.split(",");
+        gobPaths = lsAreaText.split(",");
 
-        files.removeAt(files.length() - 1);
+        gobPaths.removeAt(gobPaths.length() - 1);
 
-        for(index = 0; index < files.length(); index++){
-            counted = countAllFiles(files.at(index).trimmed());
-            if(counted == 0) notFolderCount ++;
-            fileCount += counted;
-        }
-
-        giTotalFolders -= index;
-        fileCount -= giTotalFolders;
-        giFileCounter = fileCount;
-        giTotalFolders += notFolderCount;
-        ui->fileCountLabel->setText(giFileCounter > 0 ? QString::number(giFileCounter):QString::number(0));
-        ui->folderCountLabel->setText(giTotalFolders > 0 ? QString::number(giTotalFolders):QString::number(0));
-
-        if(ui->toFilesTextField->text() != NULL && !(ui->toFilesTextField->text() == "") && giFileCounter > 0){
-            ui->backupButton->setEnabled(true);
-        }else{
-            ui->backupButton->setEnabled(false);
-        }
+        emit(main_signal_scanFolders(gobPaths));
     }
 }
 
@@ -430,7 +420,6 @@ void BUMain::on_actionAbout_triggered()
 
 void BUMain::on_actionOpen_session_triggered()
 {
-    targetFolder = "";
     targetFolder = QFileDialog::getOpenFileName(this, tr("Open Session"),
                                                     "",
                                                     tr("Session files (*.qbs);;All files(*.*)"));
@@ -442,7 +431,6 @@ void BUMain::on_actionOpen_session_triggered()
 
 void BUMain::on_actionLoad_theme_triggered()
 {
-    targetFolder = "";
     targetFolder = QFileDialog::getOpenFileName(this, tr("Open Style"),
                                                     "",
                                                     tr("Stylesheets (*.qss);;All files(*.*)"));
@@ -457,10 +445,16 @@ void BUMain::on_actionLoad_theme_triggered()
 
 void BUMain::on_actionSave_session_triggered()
 {
-    targetFolder = "";
+
     targetFolder = QFileDialog::getSaveFileName(this, tr("Save session"), "", tr("Session files (*.qbs);;All files(*.*)"));
 
     if(targetFolder != NULL && targetFolder != ""){
         saveSessionToFile(targetFolder);
     }
+}
+
+void BUMain::on_actionFind_in_sources_triggered()
+{
+    //qDebug() << "Find pressed";
+    gobSearchDialog->setVisible(true);
 }
