@@ -54,6 +54,8 @@ C. Copying several files:
 2. HOW TO BUILD FROM SOURCE
 ------------------------------------------------
 
+QT5 must be installed. (qt5-base or download the QTCreator IDE from www.qt.io/download)
+
   1. qmake QBack.pro
   2. make all -j4
   3. make clean
