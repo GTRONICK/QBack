@@ -326,8 +326,6 @@ void BUMain::on_openTargetButton_clicked()
 
 void BUMain::on_fromFilesTextArea_textChanged()
 {
-    ui->backupButton->setEnabled(false);
-
     ui->overallCopyProgressBar->setValue(0);
 
     giTotalFolders = 0;
