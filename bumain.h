@@ -33,6 +33,7 @@ signals:
     void main_signal_copyFile(QString file,QString path);
     void main_signal_logInfo(QString info);
     void main_signal_scanFolders(QStringList folderPaths);
+    void main_signal_setTextEdit(QPlainTextEdit *textEdit);
 
 private slots:
     void on_backupButton_clicked();
@@ -56,6 +57,7 @@ private slots:
     void main_slot_resetCursor();
     void main_slot_setTotalFilesAndFolders(int aiFileCounter, int aiFolderCounter);
     void main_slot_workerDone();
+    void main_slot_getTextEdit();
 
 private:
     void initThreadSetup();
