@@ -419,7 +419,7 @@ void BUMain::on_actionAbout_triggered()
                "<br>/home/user/Documents/script.sh,"
                "<p>You can paste clipboard contents here, but be sure to end each file path with comma");
 
-    QMessageBox::about(this, tr("About QBack 1.2.1"),
+    QMessageBox::about(this, tr("About QBack 1.2.2"),
     tr(helpText));
 }
 
