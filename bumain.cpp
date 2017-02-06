@@ -41,8 +41,6 @@ BUMain::BUMain(QWidget *parent) :
     styleFile.open(QFile::ReadOnly);
     QString StyleSheet = QLatin1String(styleFile.readAll());
     this->setStyleSheet(StyleSheet);
-
-    gobSearchDialog->setGlobalText(ui->fromFilesTextArea);
 }
 
 bool BUMain::eventFilter(QObject *obj, QEvent *event)
@@ -103,6 +101,8 @@ void BUMain::initThreadSetup()
     connect(this,SIGNAL(main_signal_scanFolders(QStringList)),worker,SLOT(worker_slot_scanFolders(QStringList)));
     connect(worker,SIGNAL(worker_signal_setTotalFilesAndFolders(int,int)),this,SLOT(main_slot_setTotalFilesAndFolders(int,int)));
     connect(worker,SIGNAL(worker_signal_workerDone()), this,SLOT(main_slot_workerDone()));
+    connect(gobSearchDialog,SIGNAL(search_signal_getTextEditText()),this,SLOT(main_slot_getTextEdit()));
+    connect(this,SIGNAL(main_signal_setTextEdit(QPlainTextEdit*)),gobSearchDialog,SLOT(search_slot_setTextEdit(QPlainTextEdit*)));
     connect(thread,SIGNAL(finished()),worker,SLOT(deleteLater()));
     connect(thread,SIGNAL(finished()),thread,SLOT(deleteLater()));
     thread->start();
@@ -308,6 +308,11 @@ void BUMain::main_slot_workerDone()
     }
 }
 
+void BUMain::main_slot_getTextEdit()
+{
+    emit(main_signal_setTextEdit(this->ui->fromFilesTextArea));
+}
+
 void BUMain::on_openTargetButton_clicked()
 {
 
@@ -393,6 +398,8 @@ void BUMain::loadSessionFile(QString asFilePath)
           }
        }
     }
+
+    this->main_slot_resetCursor();
 }
 
 void BUMain::on_actionQuit_triggered()
@@ -412,7 +419,7 @@ void BUMain::on_actionAbout_triggered()
                "<br>/home/user/Documents/script.sh,"
                "<p>You can paste clipboard contents here, but be sure to end each file path with comma");
 
-    QMessageBox::about(this, tr("About QBack 1.1.0"),
+    QMessageBox::about(this, tr("About QBack 1.2.1"),
     tr(helpText));
 }
 
