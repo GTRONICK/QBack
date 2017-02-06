@@ -14,25 +14,26 @@ class SearchDialog : public QDialog
 
 public:
     explicit SearchDialog(QWidget *parent = 0);
-    void setGlobalText(QPlainTextEdit *textEdit);
     ~SearchDialog();
 
 signals:
     void search_signal_resetCursor();
+    void search_signal_getTextEditText();
 
 private slots:
     void on_searchDialog_searchButton_clicked();
-
-
     void on_searchDialog_replaceButton_clicked();
-
     void on_searchDialog_replaceAllButton_clicked();
+    void search_slot_setTextEdit(QPlainTextEdit *textEdit);
 
 private:
     Ui::SearchDialog *ui;
     int giLine;
     int giLogCursorPos;
     int giOcurrencesFound;
+    bool gbReplaceAllClicked;
+    bool gbReplaceClicked;
+    bool gbSearchClicked;
     QString gsFoundText;
     QPlainTextEdit *gobTextEdit;
 };
