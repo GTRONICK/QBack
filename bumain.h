@@ -55,13 +55,13 @@ private slots:
     void main_slot_receiveDirAndFileList(QStringList *dirs, QStringList *files);
     void main_slot_copyNextFile();
     void main_slot_resetCursor();
-    void main_slot_setTotalFilesAndFolders(int aiFileCounter, int aiFolderCounter);
+    void main_slot_setTotalFilesAndFolders(int aiFileCounter, int aiFolderCounter, qint64 aiTotalFilesSize);
     void main_slot_workerDone();
     void main_slot_getTextEdit();
 
 private:
     void initThreadSetup();
-    unsigned long countAllFiles(QString path);
+    int  countAllFiles(QString path);
     void installEventFilters();
     void uninstallEventFilters();
     bool saveSessionToFile(QString filePath);
@@ -82,6 +82,7 @@ private:
     int giKeep;                     //Stop copy flag
     int giCurrentPos;               //Current carret position in the fromFilesTextArea
     int giFileCounter;              //Total files counter
+    qint64 giTotalFilesSize;          //Total files size to be copied
     int giProgress;                 //Copy progress counter
     int giTotalFolders;             //Total folder counter
     int validatorFlag;              //Backup button disable flag
