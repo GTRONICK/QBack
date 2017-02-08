@@ -15,12 +15,13 @@ public:
 
 signals:
     void worker_Signal_updateProgressBar(int value);
+    void worker_signal_setMaximumOnProgressBar(int value);
     void worker_signal_keepCopying();
     void worker_signal_logInfo(QString info);
     void worker_signal_statusInfo(QString info);
     void worker_signal_showMessage(QString message);
     void worker_signal_sendDirAndFileList(QStringList *, QStringList *);
-    void worker_signal_setTotalFilesAndFolders(int totalFiles, int totalFolders);
+    void worker_signal_setTotalFilesAndFolders(int totalFiles, int totalFolders, qint64 totalFileSize);
     void worker_signal_copyNextFile();
     void worker_signal_workerDone();
 
@@ -34,10 +35,11 @@ public slots:
 private:
     bool copyRecursively(QString srcFilePath, QString tgtFilePath);
     void countAllFiles(QString path);
-    int giTotalFiles;
-    int giStopDirCopy;
-    int giTotalFolders;
-    int giFileCounter;
+    int  giTotalFiles;
+    int  giStopDirCopy;
+    int  giTotalFolders;
+    int  giFileCounter;
+    qint64 giTotalFilesSize;
 
     QFile *gobFile;
     QStringList *gobDirList;
