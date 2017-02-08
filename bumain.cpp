@@ -86,6 +86,7 @@ void BUMain::initThreadSetup()
     worker = new Worker;
     worker->moveToThread(thread);
     connect(worker,SIGNAL(worker_Signal_updateProgressBar(int)),ui->overallCopyProgressBar,SLOT(setValue(int)),Qt::QueuedConnection);
+    connect(worker,SIGNAL(worker_signal_setMaximumOnProgressBar(int)),ui->overallCopyProgressBar,SLOT(setMaximum(int)));
     connect(this,SIGNAL(main_signal_createDirs(QString,QString,int)),worker,SLOT(worker_slot_createDirs(QString,QString,int)),Qt::QueuedConnection);
     connect(worker,SIGNAL(worker_signal_keepCopying()),this,SLOT(main_slot_keepCopying()),Qt::QueuedConnection);
     connect(worker,SIGNAL(worker_signal_logInfo(QString)),gobLogViewer,SLOT(logger_slot_logInfo(QString)),Qt::QueuedConnection);
@@ -99,7 +100,7 @@ void BUMain::initThreadSetup()
     connect(this,SIGNAL(main_signal_logInfo(QString)),gobLogViewer,SLOT(logger_slot_logInfo(QString)));
     connect(gobSearchDialog,SIGNAL(search_signal_resetCursor()),this,SLOT(main_slot_resetCursor()));
     connect(this,SIGNAL(main_signal_scanFolders(QStringList)),worker,SLOT(worker_slot_scanFolders(QStringList)));
-    connect(worker,SIGNAL(worker_signal_setTotalFilesAndFolders(int,int)),this,SLOT(main_slot_setTotalFilesAndFolders(int,int)));
+    connect(worker,SIGNAL(worker_signal_setTotalFilesAndFolders(int,int,qint64)),this,SLOT(main_slot_setTotalFilesAndFolders(int,int,qint64)));
     connect(worker,SIGNAL(worker_signal_workerDone()), this,SLOT(main_slot_workerDone()));
     connect(gobSearchDialog,SIGNAL(search_signal_getTextEditText()),this,SLOT(main_slot_getTextEdit()));
     connect(this,SIGNAL(main_signal_setTextEdit(QPlainTextEdit*)),gobSearchDialog,SLOT(search_slot_setTextEdit(QPlainTextEdit*)));
@@ -288,14 +289,15 @@ void BUMain::main_slot_resetCursor()
     ui->fromFilesTextArea->moveCursor(QTextCursor::Start);
 }
 
-void BUMain::main_slot_setTotalFilesAndFolders(int aiFileCounter,int aiFolderCounter)
+void BUMain::main_slot_setTotalFilesAndFolders(int aiFileCounter,int aiFolderCounter, qint64 aiTotalFilesSize)
 {
     giTotalFolders = aiFolderCounter;
     giFileCounter = aiFileCounter;
+    giTotalFilesSize = aiTotalFilesSize;
 
     ui->fileCountLabel->setText(giFileCounter > 0 ? QString::number(giFileCounter):QString::number(0));
     ui->folderCountLabel->setText(giTotalFolders > 0 ? QString::number(giTotalFolders):QString::number(0));
-
+    ui->totalFileSizeValueLabel->setText(giTotalFilesSize > 0 ? QString::number(giTotalFilesSize):QString::number(0));
 }
 
 void BUMain::main_slot_workerDone()
@@ -331,8 +333,6 @@ void BUMain::on_openTargetButton_clicked()
 
 void BUMain::on_fromFilesTextArea_textChanged()
 {
-    ui->overallCopyProgressBar->setValue(0);
-
     giTotalFolders = 0;
 
     QString lsAreaText = ui->fromFilesTextArea->toPlainText();
@@ -341,6 +341,8 @@ void BUMain::on_fromFilesTextArea_textChanged()
         gobPaths = lsAreaText.split(",");
 
         gobPaths.removeAt(gobPaths.length() - 1);
+
+        this->uninstallEventFilters();
 
         emit(main_signal_scanFolders(gobPaths));
     }
