@@ -118,6 +118,36 @@
             </property>
            </widget>
           </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="totalSizeLabel">
+            <property name="font">
+             <font>
+              <pointsize>7</pointsize>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Size (MB):</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLabel" name="totalFileSizeValueLabel">
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">color: rgb(0, 170, 255);</string>
+            </property>
+            <property name="text">
+             <string>0</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </item>
         <item>
@@ -319,7 +349,7 @@ color: rgb(85, 255, 0);</string>
           <item>
            <widget class="QPushButton" name="backupButton">
             <property name="enabled">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -387,6 +417,9 @@ color: rgb(85, 255, 0);</string>
       </item>
       <item>
        <widget class="QProgressBar" name="overallCopyProgressBar">
+        <property name="maximum">
+         <number>0</number>
+        </property>
         <property name="value">
          <number>0</number>
         </property>
@@ -406,7 +439,7 @@ color: rgb(85, 255, 0);</string>
      <x>0</x>
      <y>0</y>
      <width>726</width>
-     <height>19</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -430,33 +463,63 @@ color: rgb(85, 255, 0);</string>
     </property>
     <addaction name="actionAbout"/>
    </widget>
+   <widget class="QMenu" name="menuToold">
+    <property name="title">
+     <string>Tools</string>
+    </property>
+    <addaction name="actionFind_in_sources"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuSettings"/>
+   <addaction name="menuToold"/>
    <addaction name="menuHelp"/>
   </widget>
   <action name="actionOpen_session">
    <property name="text">
     <string>Open session...</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
   </action>
   <action name="actionSave_session">
    <property name="text">
     <string>Save session</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
    </property>
   </action>
   <action name="actionQuit">
    <property name="text">
     <string>Quit</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
+   </property>
   </action>
   <action name="actionLoad_theme">
    <property name="text">
     <string>Load theme</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+T</string>
+   </property>
   </action>
   <action name="actionAbout">
    <property name="text">
     <string>About</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+A</string>
+   </property>
+  </action>
+  <action name="actionFind_in_sources">
+   <property name="text">
+    <string>Find in sources...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+F</string>
    </property>
   </action>
  </widget>
