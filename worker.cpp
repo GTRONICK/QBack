@@ -17,6 +17,7 @@ Worker::Worker(QObject *parent) :
     giStopDirCopy = 0;
     giFileCounter = 0;
     giTotalFolders = 0;
+    giTotalFilesSize = 0;
     gobDirList = new QStringList;
     gobFilesList = new QStringList;
 
@@ -104,7 +105,10 @@ void Worker::worker_slot_scanFolders(QStringList aobFolderPaths)
     emit(worker_signal_statusInfo("Counting files, please wait..."));
     giTotalFolders = 0;
     giFileCounter = 0;
+    giTotalFilesSize = 0;
     int index = 0;
+
+    emit(worker_signal_setMaximumOnProgressBar(0));
 
     for(index = 0; index < aobFolderPaths.length(); index++){
 
@@ -112,7 +116,8 @@ void Worker::worker_slot_scanFolders(QStringList aobFolderPaths)
     }
 
     emit(worker_signal_statusInfo("Ready."));
-    emit(worker_signal_setTotalFilesAndFolders(giFileCounter, giTotalFolders));
+    emit(worker_signal_setTotalFilesAndFolders(giFileCounter, giTotalFolders, giTotalFilesSize / 1000000));
+    emit(worker_signal_setMaximumOnProgressBar(giFileCounter > 0 ? giFileCounter : 1));
     emit(worker_signal_workerDone());
 }
 
@@ -175,8 +180,9 @@ void Worker::countAllFiles(QString path)
         }
     }else{
         giFileCounter ++;
+        giTotalFilesSize += (source.size());
     }
 
-    if(giFileCounter % 10 == 0) emit(worker_signal_setTotalFilesAndFolders(giFileCounter,giTotalFolders));
+    if(giFileCounter % 50 == 0) emit(worker_signal_setTotalFilesAndFolders(giFileCounter,giTotalFolders,giTotalFilesSize / 1000000));
 
 }
