@@ -20,7 +20,7 @@ BUMain::BUMain(QWidget *parent) :
     ui->backupButton->setEnabled(false);
     ui->openTargetButton->setEnabled(false);
     dialog = new QFileDialog(this);
-    giCurrentPos = 0;
+    giCurrentPos = -1;
     giProgress = 0;
     giFileCounter = 0;
     giTotalFolders = 0;
