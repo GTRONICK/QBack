@@ -15,14 +15,17 @@ TEMPLATE = app
 SOURCES += main.cpp\
         bumain.cpp \
     worker.cpp \
-    logviewer.cpp
+    logviewer.cpp \
+    searchdialog.cpp
 
 HEADERS  += bumain.h \
     worker.h \
-    logviewer.h
+    logviewer.h \
+    searchdialog.h
 
 FORMS    += bumain.ui \
-    logviewer.ui
+    logviewer.ui \
+    searchdialog.ui
 
 RESOURCES += \
     img/icons.qrc
