@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>726</width>
-    <height>309</height>
+    <width>728</width>
+    <height>330</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -438,8 +438,8 @@ color: rgb(85, 255, 0);</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>726</width>
-     <height>21</height>
+     <width>728</width>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -456,6 +456,7 @@ color: rgb(85, 255, 0);</string>
      <string>Settings</string>
     </property>
     <addaction name="actionLoad_theme"/>
+    <addaction name="actionDefault_theme"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -520,6 +521,11 @@ color: rgb(85, 255, 0);</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+F</string>
+   </property>
+  </action>
+  <action name="actionDefault_theme">
+   <property name="text">
+    <string>Default theme</string>
    </property>
   </action>
  </widget>
