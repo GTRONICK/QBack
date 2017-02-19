@@ -16,31 +16,37 @@ BUMain::BUMain(QWidget *parent) :
 {
 
     ui->setupUi(this);
-    this->installEventFilters();
-    ui->backupButton->setEnabled(false);
-    ui->openTargetButton->setEnabled(false);
-    dialog = new QFileDialog(this);
-    giCurrentPos = -1;
-    giProgress = 0;
-    giFileCounter = 0;
-    giTotalFolders = 0;
-    validatorFlag = 0;
-    giKeep = 0;
-    gobLogViewer = new LogViewer;
-    gobSearchDialog = new SearchDialog(this);
-    targetDirectories = new QStringList;
-    sourceFiles = new QStringList;
-    giCopyFileIndex = 0;
-    gbBackcupButtonPressed = false;
-
-    this->initThreadSetup();
-    this->move(QApplication::desktop()->screen()->rect().center() - this->rect().center());
-    this->loadSessionFile("Session.qbs");
 
     QFile styleFile("style.qss");
     styleFile.open(QFile::ReadOnly);
     QString StyleSheet = QLatin1String(styleFile.readAll());
+
+    dialog = new QFileDialog(this);
+    gobLogViewer = new LogViewer;
+    gobSearchDialog = new SearchDialog(this);
+    targetDirectories = new QStringList;
+    sourceFiles = new QStringList;
+
+    giCurrentPos = -1;
+    giProgress = 0;
+
+    giKeep = 0;
+    giCopyFileIndex = 0;
+    validatorFlag = 0;
+    giFlag = 0;
+    giControl = 0;
+
+    gbBackcupButtonPressed = false;
+    gbCountCancel = false;
+
+    this->resetCounters();
     this->setStyleSheet(StyleSheet);
+    this->installEventFilters();
+    this->move(QApplication::desktop()->screen()->rect().center() - this->rect().center());
+    this->ui->backupButton->setEnabled(false);
+    this->ui->openTargetButton->setEnabled(false);
+    this->initThreadSetup();
+    this->loadSessionFile("Session.qbs");
 }
 
 bool BUMain::eventFilter(QObject *obj, QEvent *event)
@@ -85,11 +91,10 @@ void BUMain::initThreadSetup()
     thread = new QThread;
     worker = new Worker;
     worker->moveToThread(thread);
-    connect(worker,SIGNAL(worker_Signal_updateProgressBar(int)),ui->overallCopyProgressBar,SLOT(setValue(int)),Qt::QueuedConnection);
-    connect(worker,SIGNAL(worker_signal_setMaximumOnProgressBar(int)),ui->overallCopyProgressBar,SLOT(setMaximum(int)));
-    connect(this,SIGNAL(main_signal_createDirs(QString,QString,int)),worker,SLOT(worker_slot_createDirs(QString,QString,int)),Qt::QueuedConnection);
-    connect(worker,SIGNAL(worker_signal_keepCopying()),this,SLOT(main_slot_keepCopying()),Qt::QueuedConnection);
-    connect(worker,SIGNAL(worker_signal_logInfo(QString)),gobLogViewer,SLOT(logger_slot_logInfo(QString)),Qt::QueuedConnection);
+    connect(worker,SIGNAL(worker_Signal_updateProgressBar(int)),ui->overallCopyProgressBar,SLOT(setValue(int)));
+    connect(this,SIGNAL(main_signal_createDirs(QString,QString,int)),worker,SLOT(worker_slot_createDirs(QString,QString,int)));
+    connect(worker,SIGNAL(worker_signal_keepCopying()),this,SLOT(main_slot_keepCopying()));
+    connect(worker,SIGNAL(worker_signal_logInfo(QString)),gobLogViewer,SLOT(logger_slot_logInfo(QString)));
     connect(worker,SIGNAL(worker_signal_statusInfo(QString)),this,SLOT(main_slot_setStatus(QString)));
     connect(worker,SIGNAL(worker_signal_showMessage(QString)),this,SLOT(main_slot_showMessage(QString)));
     connect(this,SIGNAL(main_signal_setStopFlag(int)),worker,SLOT(worker_slot_setStopFlag(int)));
@@ -99,15 +104,16 @@ void BUMain::initThreadSetup()
     connect(worker,SIGNAL(worker_signal_copyNextFile()),this,SLOT(main_slot_copyNextFile()));
     connect(this,SIGNAL(main_signal_logInfo(QString)),gobLogViewer,SLOT(logger_slot_logInfo(QString)));
     connect(gobSearchDialog,SIGNAL(search_signal_resetCursor()),this,SLOT(main_slot_resetCursor()));
-    connect(this,SIGNAL(main_signal_scanFolders(QStringList)),worker,SLOT(worker_slot_scanFolders(QStringList)));
+    connect(this,SIGNAL(main_signal_scanFolders(QString)),worker,SLOT(worker_slot_scanFolders(QString)));
     connect(worker,SIGNAL(worker_signal_setTotalFilesAndFolders(int,int,qint64)),this,SLOT(main_slot_setTotalFilesAndFolders(int,int,qint64)));
     connect(worker,SIGNAL(worker_signal_workerDone()), this,SLOT(main_slot_workerDone()));
     connect(gobSearchDialog,SIGNAL(search_signal_getTextEditText()),this,SLOT(main_slot_getTextEdit()));
     connect(this,SIGNAL(main_signal_setTextEdit(QPlainTextEdit*)),gobSearchDialog,SLOT(search_slot_setTextEdit(QPlainTextEdit*)));
+    connect(worker,SIGNAL(worker_signal_scanReady()),this,SLOT(main_slot_scanReady()));
+    connect(this,SIGNAL(main_signal_scanNextPath()),worker,SLOT(worker_slot_scanNextPath()));
     connect(thread,SIGNAL(finished()),worker,SLOT(deleteLater()));
     connect(thread,SIGNAL(finished()),thread,SLOT(deleteLater()));
     thread->start();
-
 }
 
 void BUMain::installEventFilters()
@@ -145,16 +151,7 @@ bool BUMain::saveSessionToFile(QString filePath)
 void BUMain::on_backupButton_clicked()
 {
     if(gbBackcupButtonPressed == false){
-        emit(main_signal_logInfo("\n ----- Copy Started ----- \n"));
-        gbBackcupButtonPressed = true;
-        this->ui->backupButton->setText("Ca&ncel");
-        this->ui->backupButton->setIcon(QIcon(":/icons/cancelCopy.png"));
-        emit(main_signal_setStopFlag(0));
-        giKeep = 0;
-        ui->toFilesTextField->setText(ui->toFilesTextField->text().trimmed());
-        giCopyFileIndex = 0;
-        this->uninstallEventFilters();
-        giProgress = 0;
+
         int recursiveAlertFlag = 0;
 
         worker->setFileCounter(0);
@@ -163,24 +160,45 @@ void BUMain::on_backupButton_clicked()
         gobPaths.removeAt(gobPaths.length() - 1);
         for(int i = 0; i < gobPaths.length(); i++){
             gobPaths.replace(i,gobPaths.at(i).trimmed());
-            if(gobPaths.at(i) == ui->toFilesTextField->text().trimmed()){
+            if(ui->toFilesTextField->text().contains(gobPaths.at(i))){
                 recursiveAlertFlag = 1;
-                break;
+                i = gobPaths.length() + 2;
             }
         }
 
-        if(recursiveAlertFlag == 0){
-            ui->overallCopyProgressBar->setValue(0);
-            ui->overallCopyProgressBar->setMaximum(giFileCounter > 0 ? giFileCounter:1);
-            emit(main_signal_createDirs(gobPaths.at(0),ui->toFilesTextField->text().trimmed(),giKeep));
+        QString firstPath = gobPaths.at(0);
+
+        if(recursiveAlertFlag == 0)
+        {
+            giKeep = 0;
+            giProgress = 0;
+            giCopyFileIndex = 0;
+            gbBackcupButtonPressed = true;
+
+            this->uninstallEventFilters();
+            this->ui->toFilesTextField->setText(ui->toFilesTextField->text().trimmed());
+            this->ui->backupButton->setText("Ca&ncel");
+            this->ui->backupButton->setIcon(QIcon(":/icons/cancelCopy.png"));
+
+            emit(main_signal_logInfo("\n ----- Copy Started ----- \n"));
+            emit(main_signal_setStopFlag(0));
+            if(firstPath.contains(">") && firstPath.lastIndexOf(">") != firstPath.length()){
+                qDebug() << "Custom path found";
+                emit(main_signal_createDirs(firstPath.split(">").at(0),firstPath.split(">").at(1),giKeep));
+            }else{
+                emit(main_signal_createDirs(gobPaths.at(0),ui->toFilesTextField->text().trimmed(),giKeep));
+            }
         }else{
-            QMessageBox::critical(this,"Recursive operation alert!","The target folder is the same source folder");
+            QMessageBox::critical(this,"Recursive operation alert!","The target folder contains a source folder");
         }
     }else{
-        emit(main_signal_logInfo("\n ----- Copy Cancelled ----- \n"));
+
         gbBackcupButtonPressed = false;
+
         this->ui->backupButton->setText("&Backup!");
         this->ui->backupButton->setIcon(QIcon(":/icons/backupButton.png"));
+
+        emit(main_signal_logInfo("\n ----- Copy Cancelled ----- \n"));
         on_cancelButton_clicked();
     }
 }
@@ -188,7 +206,7 @@ void BUMain::on_backupButton_clicked()
 void BUMain::on_originButton_clicked()
 {
     targetFolder.clear();
-    giTotalFolders = 0;
+    giTmpTotalFolders = 0;
 
     dialog->setFileMode(QFileDialog::Directory);
     dialog->setOption(QFileDialog::ShowDirsOnly,true);
@@ -215,7 +233,7 @@ void BUMain::on_targetButton_clicked()
         targetFolder = dialog->selectedFiles().at(0);
     }
 
-    if(targetFolder != NULL && targetFolder != "" && giFileCounter > 0){
+    if(targetFolder != NULL && targetFolder != "" && giTmpTotalFiles > 0){
         ui->backupButton->setEnabled(true);
     }
 
@@ -225,15 +243,14 @@ void BUMain::on_targetButton_clicked()
 void BUMain::on_toFilesTextField_textChanged()
 {
     validatorFlag = 0;
-    if(ui->toFilesTextField->text() != NULL &&
-            ui->toFilesTextField->text() != "" &&
-            !ui->toFilesTextField->text().startsWith(" ")){
+    if(!ui->toFilesTextField->text().isEmpty() && !ui->toFilesTextField->text().startsWith(" "))
+    {
+        ui->openTargetButton->setEnabled(true);
         validatorFlag = 1;
-        if(giFileCounter > 0){
+
+        if(giTotalFiles > 0){
             ui->backupButton->setEnabled(true);
         }
-
-        ui->openTargetButton->setEnabled(true);
 
     }else{
         ui->backupButton->setEnabled(false);
@@ -244,8 +261,17 @@ void BUMain::on_toFilesTextField_textChanged()
 void BUMain::main_slot_keepCopying()
 {
     giProgress ++;
+
     if(giProgress < gobPaths.length() && giKeep == 0){
-        emit(main_signal_createDirs(gobPaths.at(giProgress),ui->toFilesTextField->text(),giKeep));
+        QString currentPath = gobPaths.at(giProgress);
+        if(currentPath.contains(">") && currentPath.lastIndexOf(">") != currentPath.length() - 1){
+            emit(main_signal_createDirs(currentPath.split(">").at(0),currentPath.split(">").at(1),giKeep));
+        }else {
+            if(currentPath.contains(">")){
+                currentPath = currentPath.split(">").at(0);
+            }
+            emit(main_signal_createDirs(currentPath,ui->toFilesTextField->text().trimmed(),giKeep));
+        }
     }else{
         this->installEventFilters();
         // qDebug() << "main: Scan finished, emmiting SIGNAL readyToStartCopy";
@@ -285,28 +311,44 @@ void BUMain::main_slot_copyNextFile()
 
 void BUMain::main_slot_resetCursor()
 {
-    //qDebug() << "main: resetCursor SIGNAL Recevied";
+    // qDebug() << "main: resetCursor SIGNAL Recevied";
     ui->fromFilesTextArea->moveCursor(QTextCursor::Start);
 }
 
 void BUMain::main_slot_setTotalFilesAndFolders(int aiFileCounter,int aiFolderCounter, qint64 aiTotalFilesSize)
 {
-    giTotalFolders = aiFolderCounter;
-    giFileCounter = aiFileCounter;
-    giTotalFilesSize = aiTotalFilesSize;
+    if(giFlag == 1){
+        giTmpTotalFolders = aiFolderCounter;
+        giTmpTotalFiles = aiFileCounter;
+        giTmpTotalFilesSize = aiTotalFilesSize;
 
-    ui->fileCountLabel->setText(giFileCounter > 0 ? QString::number(giFileCounter):QString::number(0));
-    ui->folderCountLabel->setText(giTotalFolders > 0 ? QString::number(giTotalFolders):QString::number(0));
-    ui->totalFileSizeValueLabel->setText(giTotalFilesSize > 0 ? QString::number(giTotalFilesSize):QString::number(0));
+        ui->fileCountLabel->setText(aiFileCounter > 0 ? QString::number(aiFileCounter):QString::number(0));
+        ui->folderCountLabel->setText(aiFolderCounter > 0 ? QString::number(aiFolderCounter):QString::number(0));
+        ui->totalFileSizeValueLabel->setText(aiTotalFilesSize > 0 ? QString::number(aiTotalFilesSize):QString::number(0));
+    }
 }
 
 void BUMain::main_slot_workerDone()
 {
-    this->installEventFilters();
-    if(ui->toFilesTextField->text() != NULL && !(ui->toFilesTextField->text() == "") && giFileCounter > 0){
-        ui->backupButton->setEnabled(true);
-    }else{
-        ui->backupButton->setEnabled(false);
+    if(giFlag == 1){
+
+//    qDebug() << "main: SIGNAL workerDone received";
+        giPathIndex ++;
+        giTotalFiles += giTmpTotalFiles;
+        giTotalFilesSize += giTmpTotalFilesSize;
+        giTotalFolders += giTmpTotalFolders;
+        if(giPathIndex < gobPaths.length()){
+            emit(main_signal_scanFolders(gobPaths.at(giPathIndex)));
+
+        }else{
+            this->installEventFilters();
+            ui->fileCountLabel->setText(giTotalFiles > 0 ? QString::number(giTotalFiles):QString::number(0));
+            ui->folderCountLabel->setText(giTotalFolders > 0 ? QString::number(giTotalFolders):QString::number(0));
+            ui->totalFileSizeValueLabel->setText(giTotalFilesSize > 0 ? QString::number(giTotalFilesSize):QString::number(0));
+            ui->overallCopyProgressBar->setMaximum(giTotalFiles > 0 ? giTotalFiles : 1);
+            checkBackupButton();
+            //resetCounters();
+        }
     }
 }
 
@@ -322,10 +364,10 @@ void BUMain::on_openTargetButton_clicked()
 
     if(ui->toFilesTextField->text() != NULL &&
             ui->toFilesTextField->text() != "" &&
-            !ui->toFilesTextField->text().startsWith(' ')){
-
-
-        if(!QDesktopServices::openUrl(QUrl::fromLocalFile(ui->toFilesTextField->text()))){
+            !ui->toFilesTextField->text().startsWith(' '))
+    {
+        if(!QDesktopServices::openUrl(QUrl::fromLocalFile(ui->toFilesTextField->text())))
+        {
             QMessageBox::critical(this,"Error","Target folder \"" + ui->toFilesTextField->text() + "\" not found!");
         }
     }
@@ -333,18 +375,45 @@ void BUMain::on_openTargetButton_clicked()
 
 void BUMain::on_fromFilesTextArea_textChanged()
 {
-    giTotalFolders = 0;
+
+    resetCounters();
 
     QString lsAreaText = ui->fromFilesTextArea->toPlainText();
-    if(lsAreaText.lastIndexOf(",") != giCurrentPos){
+
+    if(lsAreaText.lastIndexOf(",") != giCurrentPos && lsAreaText.lastIndexOf(",") != -1 && giFlag == 1){
+
+        ui->overallCopyProgressBar->setMaximum(0);
+        // qDebug() << "main: Comma detected!";
+        gobPaths.clear();
+        gbCountCancel = false;
         giCurrentPos = lsAreaText.lastIndexOf(",");
         gobPaths = lsAreaText.split(",");
-
         gobPaths.removeAt(gobPaths.length() - 1);
-
         this->uninstallEventFilters();
+        emit(main_signal_scanFolders(gobPaths.at(giPathIndex)));
 
-        emit(main_signal_scanFolders(gobPaths));
+    }else if(lsAreaText.lastIndexOf(",") == -1){
+        resetCounters();
+        giCurrentPos = -1;
+        gbCountCancel = true;
+        this->ui->overallCopyProgressBar->setMaximum(1);
+        this->ui->fileCountLabel->setText("0");
+        this->ui->folderCountLabel->setText("0");
+        this->ui->totalFileSizeValueLabel->setText("0");
+        this->installEventFilters();
+        // qDebug() << "Calling workerDone from main";
+        this->main_slot_setStatus("Ready.");
+        ui->backupButton->setEnabled(false);
+    }
+}
+
+void BUMain::main_slot_scanReady()
+{
+
+    // qDebug() << "main: scanReady SIGNAL received";
+    if(gbCountCancel == false ){
+        // qDebug() << "main: Emitting scanNextPath SIGNAL";
+        emit(main_signal_scanNextPath());
     }
 }
 
@@ -373,6 +442,17 @@ void BUMain::on_cancelButton_clicked()
     giCopyFileIndex = 0;
 }
 
+void BUMain::resetCounters()
+{
+    this->giTmpTotalFolders = 0;
+    this->giTmpTotalFiles = 0;
+    this->giTmpTotalFilesSize = 0;
+    this->giPathIndex = 0;
+    this->giTotalFiles = 0;
+    this->giTotalFolders = 0;
+    this->giTotalFilesSize = 0;
+}
+
 void BUMain::closeEvent(QCloseEvent *event)
 {
     if(this->saveSessionToFile("Session.qbs"))
@@ -399,9 +479,14 @@ void BUMain::loadSessionFile(QString asFilePath)
               ui->toFilesTextField->setText(line.replace("--",""));
           }
        }
+
+       resetCounters();
     }
 
+    giFlag = 1;
     this->main_slot_resetCursor();
+
+    this->on_fromFilesTextArea_textChanged();
 }
 
 void BUMain::on_actionQuit_triggered()
@@ -413,20 +498,22 @@ void BUMain::on_actionQuit_triggered()
 void BUMain::on_actionAbout_triggered()
 {
     const char *helpText = ("<h2>QBack</h2>"
-               "<p>Copyright &copy; 2016 GTRONICK."
                "<p>Enter each file path ended with comma ( , ) and without trailing spaces."
                "For example:"
                "<p>C:\\File.txt,"
                "<br>C:\\Documents and settings\\Document.pdf,"
                "<br>/home/user/Documents/script.sh,"
+               "<p>Use the greater than symbol ( > ), to copy to a different target, for example:"
+               "<br>/home/user/myTextFyle.txt>/media/USB/Backup,"
                "<p>You can paste clipboard contents here, but be sure to end each file path with comma");
 
-    QMessageBox::about(this, tr("About QBack 1.2.2"),
+    QMessageBox::about(this, tr("About QBack 1.5.0"),
     tr(helpText));
 }
 
 void BUMain::on_actionOpen_session_triggered()
 {
+    giFlag = 0;
     targetFolder = QFileDialog::getOpenFileName(this, tr("Open Session"),
                                                     "",
                                                     tr("Session files (*.qbs);;All files(*.*)"));
@@ -462,6 +549,25 @@ void BUMain::on_actionSave_session_triggered()
 
 void BUMain::on_actionFind_in_sources_triggered()
 {
-    //qDebug() << "Find pressed";
+    // qDebug() << "Find pressed";
     gobSearchDialog->setVisible(true);
+}
+
+void BUMain::checkBackupButton()
+{
+    if(ui->toFilesTextField->text() != ""
+            && !ui->toFilesTextField->text().startsWith(" ")
+            && giTotalFiles > 0)
+    {
+
+       ui->backupButton->setEnabled(true);
+       ui->openTargetButton->setEnabled(true);
+    }else{
+       ui->backupButton->setEnabled(false);
+    }
+}
+
+void BUMain::on_actionDefault_theme_triggered()
+{
+    this->setStyleSheet("");
 }
