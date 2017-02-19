@@ -32,8 +32,9 @@ signals:
     void main_signal_readyToStartCopy();
     void main_signal_copyFile(QString file,QString path);
     void main_signal_logInfo(QString info);
-    void main_signal_scanFolders(QStringList folderPaths);
+    void main_signal_scanFolders(QString folderPath);
     void main_signal_setTextEdit(QPlainTextEdit *textEdit);
+    void main_signal_scanNextPath();
 
 private slots:
     void on_backupButton_clicked();
@@ -58,6 +59,9 @@ private slots:
     void main_slot_setTotalFilesAndFolders(int aiFileCounter, int aiFolderCounter, qint64 aiTotalFilesSize);
     void main_slot_workerDone();
     void main_slot_getTextEdit();
+    void main_slot_scanReady();
+
+    void on_actionDefault_theme_triggered();
 
 private:
     void initThreadSetup();
@@ -67,6 +71,8 @@ private:
     bool saveSessionToFile(QString filePath);
     void loadSessionFile(QString asFilePath);
     void on_cancelButton_clicked();
+    void resetCounters();
+    void checkBackupButton();
 
     Ui::BUMain *ui;
     QThread *thread;
@@ -81,13 +87,24 @@ private:
 
     int giKeep;                     //Stop copy flag
     int giCurrentPos;               //Current carret position in the fromFilesTextArea
-    int giFileCounter;              //Total files counter
-    qint64 giTotalFilesSize;          //Total files size to be copied
-    int giProgress;                 //Copy progress counter
+    int giFlag;
+    int giControl;
+
+    int giTotalFiles;               //Total files counter
     int giTotalFolders;             //Total folder counter
+    qint64 giTotalFilesSize;        //Total files size to be copied.
+
+    int giTmpTotalFolders;          //Temporal folder counter
+    int giTmpTotalFiles;            //Temporal files counter
+    qint64 giTmpTotalFilesSize;     //Temporal size accumulator
+
+    int giProgress;                 //Copy progress counter
     int validatorFlag;              //Backup button disable flag
     int giCopyFileIndex;            //Index for the current file being copied
+    int giPathIndex;
     bool gbBackcupButtonPressed;    //Backup button control flag (true if pressed)
+    bool gbCountCancel;             //Flag for file counting control
+
 };
 
 #endif // BUMAIN_H
