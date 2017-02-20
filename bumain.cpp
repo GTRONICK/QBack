@@ -503,8 +503,9 @@ void BUMain::on_actionAbout_triggered()
                "<p>C:\\File.txt,"
                "<br>C:\\Documents and settings\\Document.pdf,"
                "<br>/home/user/Documents/script.sh,"
-               "<p>Use the greater than symbol ( > ), to copy to a different target, for example:"
-               "<br>/home/user/myTextFyle.txt>/media/USB/Backup,"
+               "<p>Use the greater than symbol ( > ) in the sources text area, to copy to a different target, for example:"
+               "<br>/home/user/myTextFile.txt>/media/USB/Backup,"
+               "<br>This will copy the myTextFile.txt file to the /media/USB/Backup folder."
                "<p>You can paste clipboard contents here, but be sure to end each file path with comma");
 
     QMessageBox::about(this, tr("About QBack 1.5.0"),
