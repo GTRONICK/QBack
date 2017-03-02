@@ -61,3 +61,12 @@ QT5 must be installed. (qt5-base or download the QTCreator IDE from www.qt.io/do
   3. make clean
 
 Alternatively, you can use QTCreator 5.7+ to load the project, and compile it for your distribution and architecture.
+
+3. TODO
+------------------------------------------------
+
+  1. Improve log information on errors.
+  2. Play sound or show message on copy completion.
+  3. Allow target folder creation when it don't exist.
+
+
