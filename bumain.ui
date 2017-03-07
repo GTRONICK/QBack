@@ -232,30 +232,14 @@
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_2">
           <item>
-           <widget class="QPlainTextEdit" name="fromFilesTextArea">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>600</width>
-              <height>110</height>
-             </size>
-            </property>
+           <widget class="QTextEdit" name="fromFilesTextArea">
             <property name="font">
              <font>
               <pointsize>10</pointsize>
              </font>
             </property>
-            <property name="styleSheet">
-             <string notr="true">background-color: rgb(24, 24, 24);
-color: rgb(85, 255, 0);</string>
-            </property>
             <property name="lineWrapMode">
-             <enum>QPlainTextEdit::NoWrap</enum>
+             <enum>QTextEdit::NoWrap</enum>
             </property>
            </widget>
           </item>
@@ -439,7 +423,7 @@ color: rgb(85, 255, 0);</string>
      <x>0</x>
      <y>0</y>
      <width>728</width>
-     <height>23</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
