@@ -36,7 +36,7 @@ void SearchDialog::on_searchDialog_replaceAllButton_clicked()
     emit(search_signal_getTextEditText());
 }
 
-void SearchDialog::search_slot_setTextEdit(QPlainTextEdit *textEdit)
+void SearchDialog::search_slot_setTextEdit(QTextEdit *textEdit)
 {
     this->gobTextEdit = textEdit;
 
@@ -44,6 +44,7 @@ void SearchDialog::search_slot_setTextEdit(QPlainTextEdit *textEdit)
     QTextEdit::ExtraSelection selection;
 
     if(gbReplaceAllClicked){
+        emit(search_signal_disableFilescan());
         gbReplaceAllClicked = false;
 
         gobTextEdit->extraSelections().clear();
@@ -72,6 +73,8 @@ void SearchDialog::search_slot_setTextEdit(QPlainTextEdit *textEdit)
         gsFoundText = "";
         gobTextEdit->extraSelections().clear();
         extraSelections.clear();
+        //qDebug() << "search: emitting enableFilescan SIGNAL";
+        emit(search_signal_enableFilescan());
 
     }else if(gbSearchClicked){
         gbSearchClicked = false;
@@ -97,7 +100,7 @@ void SearchDialog::search_slot_setTextEdit(QPlainTextEdit *textEdit)
             emit(search_signal_resetCursor());
             if(gobTextEdit->find(ui->seachDialog_searchLineEdit->text())){
                 ui->searchDialog_replaceButton->setEnabled(true);
-                giLogCursorPos += 1;
+                giLogCursorPos = 1;
             }
             ui->ocurrencesCounterLabel->setText(QString("%1/%2").arg(giLogCursorPos).arg(giOcurrencesFound));
         }else{
@@ -126,4 +129,12 @@ void SearchDialog::search_slot_setTextEdit(QPlainTextEdit *textEdit)
         ui->searchDialog_replaceButton->setEnabled(false);
 
     }
+}
+
+void SearchDialog::on_gobSwapTextButton_clicked()
+{
+    QString lsReplace;
+    lsReplace = this->ui->seachDialog_searchLineEdit->text();
+    this->ui->seachDialog_searchLineEdit->setText(this->ui->searchDialog_replaceLineEdit->text());
+    this->ui->searchDialog_replaceLineEdit->setText(lsReplace);
 }
