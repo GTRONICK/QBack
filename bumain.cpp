@@ -108,9 +108,11 @@ void BUMain::initThreadSetup()
     connect(worker,SIGNAL(worker_signal_setTotalFilesAndFolders(int,int,qint64)),this,SLOT(main_slot_setTotalFilesAndFolders(int,int,qint64)));
     connect(worker,SIGNAL(worker_signal_workerDone()), this,SLOT(main_slot_workerDone()));
     connect(gobSearchDialog,SIGNAL(search_signal_getTextEditText()),this,SLOT(main_slot_getTextEdit()));
-    connect(this,SIGNAL(main_signal_setTextEdit(QPlainTextEdit*)),gobSearchDialog,SLOT(search_slot_setTextEdit(QPlainTextEdit*)));
+    connect(this,SIGNAL(main_signal_setTextEdit(QTextEdit*)),gobSearchDialog,SLOT(search_slot_setTextEdit(QTextEdit*)));
     connect(worker,SIGNAL(worker_signal_scanReady()),this,SLOT(main_slot_scanReady()));
     connect(this,SIGNAL(main_signal_scanNextPath()),worker,SLOT(worker_slot_scanNextPath()));
+    connect(gobSearchDialog, SIGNAL(search_signal_enableFilescan()), this, SLOT(main_slot_enableFileScan()));
+    connect(gobSearchDialog, SIGNAL(search_signal_disableFilescan()), this, SLOT(main_slot_disableFileScan()));
     connect(thread,SIGNAL(finished()),worker,SLOT(deleteLater()));
     connect(thread,SIGNAL(finished()),thread,SLOT(deleteLater()));
     thread->start();
@@ -220,7 +222,7 @@ void BUMain::on_originButton_clicked()
         dir.setFilter(QDir::AllEntries | QDir::NoDotAndDotDot | QDir::NoSymLinks | QDir::Hidden | QDir::System);
         dir.setSorting(QDir::Type);
         if(dir.entryList().length() != 0) ui->fromFilesTextArea->clear();
-        ui->fromFilesTextArea->appendPlainText(dir.absolutePath() + ",");
+        ui->fromFilesTextArea->append(dir.absolutePath() + ",");
         if(validatorFlag == 1) ui->backupButton->setEnabled(true);
     }
 }
@@ -417,6 +419,19 @@ void BUMain::main_slot_scanReady()
     }
 }
 
+void BUMain::main_slot_disableFileScan()
+{
+    //qDebug() << "main: disableFileScan SIGNAL received";
+    giFlag = 0;
+}
+
+void BUMain::main_slot_enableFileScan()
+{
+    //qDebug() << "main: enableFileScan SIGNAL received";
+    giFlag = 1;
+    this->on_fromFilesTextArea_textChanged();
+}
+
 void BUMain::on_logViewerButton_clicked()
 {
     gobLogViewer->setVisible(true);
@@ -473,7 +488,7 @@ void BUMain::loadSessionFile(QString asFilePath)
        while (!in.atEnd()) {
           QString line = in.readLine();
           if(!line.startsWith("--")){
-              ui->fromFilesTextArea->appendPlainText(line);
+              ui->fromFilesTextArea->append(line);
           }
           else{
               ui->toFilesTextField->setText(line.replace("--",""));
