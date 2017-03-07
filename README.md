@@ -67,6 +67,6 @@ Alternatively, you can use QTCreator 5.7+ to load the project, and compile it fo
 
   1. Improve log information on errors.
   2. Play sound or show message on copy completion.
-  3. Allow target folder creation when it don't exist.
+  3. Allow target folder creation when it does not exist.
 
 
