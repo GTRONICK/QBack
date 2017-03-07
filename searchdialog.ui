@@ -9,91 +9,109 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>333</width>
-    <height>99</height>
+    <width>300</width>
+    <height>108</height>
    </rect>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>300</width>
+    <height>250</height>
+   </size>
   </property>
   <property name="windowTitle">
    <string>Seach &amp; replace</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0">
-    <widget class="QLineEdit" name="seachDialog_searchLineEdit">
-     <property name="placeholderText">
-      <string>Find...</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="1">
-    <widget class="QPushButton" name="searchDialog_searchButton">
-     <property name="text">
-      <string>Search</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="0">
-    <widget class="QLineEdit" name="searchDialog_replaceLineEdit">
-     <property name="placeholderText">
-      <string>Replace with...</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="1">
-    <widget class="QPushButton" name="searchDialog_replaceButton">
-     <property name="text">
-      <string>Replace</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="1">
+   <item row="4" column="2">
     <widget class="QPushButton" name="searchDialog_replaceAllButton">
      <property name="text">
       <string>Replace all</string>
      </property>
     </widget>
    </item>
-   <item row="2" column="0">
+   <item row="0" column="0">
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>11</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="4" column="1">
     <widget class="QLabel" name="ocurrencesCounterLabel">
      <property name="text">
       <string>0/0</string>
      </property>
     </widget>
    </item>
+   <item row="2" column="2" rowspan="2">
+    <widget class="QPushButton" name="searchDialog_replaceButton">
+     <property name="text">
+      <string>Replace</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1" rowspan="2">
+    <widget class="QLineEdit" name="searchDialog_replaceLineEdit">
+     <property name="placeholderText">
+      <string>Replace with...</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0" rowspan="2">
+    <widget class="QPushButton" name="gobSwapTextButton">
+     <property name="maximumSize">
+      <size>
+       <width>45</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <property name="text">
+      <string>Swap</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <spacer name="verticalSpacer_2">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>13</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="0" column="1" rowspan="2">
+    <widget class="QLineEdit" name="seachDialog_searchLineEdit">
+     <property name="placeholderText">
+      <string>Find...</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="2" rowspan="2">
+    <widget class="QPushButton" name="searchDialog_searchButton">
+     <property name="text">
+      <string>Search</string>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>seachDialog_searchLineEdit</tabstop>
+  <tabstop>searchDialog_replaceLineEdit</tabstop>
+  <tabstop>searchDialog_replaceButton</tabstop>
+  <tabstop>searchDialog_replaceAllButton</tabstop>
+ </tabstops>
  <resources/>
- <connections>
-  <connection>
-   <sender>searchDialog_replaceLineEdit</sender>
-   <signal>returnPressed()</signal>
-   <receiver>searchDialog_replaceButton</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>198</x>
-     <y>53</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>271</x>
-     <y>49</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>seachDialog_searchLineEdit</sender>
-   <signal>returnPressed()</signal>
-   <receiver>searchDialog_searchButton</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>214</x>
-     <y>17</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>276</x>
-     <y>20</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>
