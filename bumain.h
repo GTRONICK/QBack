@@ -33,7 +33,7 @@ signals:
     void main_signal_copyFile(QString file,QString path);
     void main_signal_logInfo(QString info);
     void main_signal_scanFolders(QString folderPath);
-    void main_signal_setTextEdit(QPlainTextEdit *textEdit);
+    void main_signal_setTextEdit(QTextEdit *textEdit);
     void main_signal_scanNextPath();
 
 private slots:
@@ -60,7 +60,8 @@ private slots:
     void main_slot_workerDone();
     void main_slot_getTextEdit();
     void main_slot_scanReady();
-
+    void main_slot_disableFileScan();
+    void main_slot_enableFileScan();
     void on_actionDefault_theme_triggered();
 
 private:
