@@ -19,12 +19,16 @@ public:
 signals:
     void search_signal_resetCursor();
     void search_signal_getTextEditText();
+    void search_signal_disableFilescan();
+    void search_signal_enableFilescan();
 
 private slots:
     void on_searchDialog_searchButton_clicked();
     void on_searchDialog_replaceButton_clicked();
     void on_searchDialog_replaceAllButton_clicked();
-    void search_slot_setTextEdit(QPlainTextEdit *textEdit);
+    void search_slot_setTextEdit(QTextEdit *textEdit);
+
+    void on_gobSwapTextButton_clicked();
 
 private:
     Ui::SearchDialog *ui;
@@ -35,7 +39,7 @@ private:
     bool gbReplaceClicked;
     bool gbSearchClicked;
     QString gsFoundText;
-    QPlainTextEdit *gobTextEdit;
+    QTextEdit *gobTextEdit;
 };
 
 #endif // SEARCHDIALOG_H
