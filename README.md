@@ -1,21 +1,21 @@
 # QBack
-A simple bakcup utility.
+A simple backup utility.
 
 ![QBack_GUI](https://sites.google.com/site/gtronick/QBack1.5.0.PNG)
 
 QBack lets you copy files from several paths, to several targets. You can also specify only files, or only directories to copy. Works on Windows and Linux (Not tested on MAC OS).
 
-1. HOW TO USE
+# 1. HOW TO USE
 -------------------------------
 
-A. Copying one folder recursively:
+## A. Copying one folder recursively:
 
   1. Click on the "Origin" button to choose the origin folder.
   2. Click on the "Target" button to choose the destination folder where the files will be copied.
   3. If you want to inspect the target folder before copy, click on "Open target".
   4. Click on the "Backup button" to start the copy.
 
-B. Copying several folders recursively:
+## B. Copying several folders recursively:
 
   1. Open your file explorer and copy the folder paths to the black text box, end each folder path with comma "," , for example: 
   You can also drag and drop the folder into the sources text area.
@@ -34,7 +34,7 @@ B. Copying several folders recursively:
   3. If you want to inspect the target folder before copy, click on "Open target".
   4. Click on the "Backup button" to start the copy.
 
-C. Copying several files:
+## C. Copying several files:
 
   1. Open your file explorer and copy the file paths to the black text box, end each file path with comma "," , for example:
   You can also drag and drop the files into the sources text area. QBack will adapt the path adding the comma sign at the end.
@@ -53,7 +53,7 @@ C. Copying several files:
   3. If you want to inspect the target folder before copy, click on "Open target".
   4. Click on the "Backup button" to start the copy.
   
-D. Copying several files and folders, to diferent targets:
+## D. Copying several files and folders, to different targets:
 
   1. Open your file explorer and copy the file paths to the sources text area and append a comma at the end of each path, or drag and drop the files.
   2. If you want to copy a file to a certain target, use the '>' symbol, for example:
@@ -65,7 +65,7 @@ D. Copying several files and folders, to diferent targets:
    
   This will cause QBack to copy the file Script.sh to /user/MyUser/media/USB_Storage, the file TextDocument.txt will be copied to /home/MyUser/BackupFolder, QBack.sh and Text.txt, will be copied to the default folder typed in the target line edit.
   
-E. Commenting paths:
+## E. Commenting paths:
 
 If you don't want to copy certain file in the list, just add the '#' sign to the start of the path to avoid its copy, for example:
 
@@ -76,7 +76,7 @@ If you don't want to copy certain file in the list, just add the '#' sign to the
   
   This will avoid the copy of Script.sh, and QBack.sh.
 
-2. HOW TO BUILD FROM SOURCE
+# 2. HOW TO BUILD FROM SOURCE
 ------------------------------------------------
 
 QT5 must be installed. (qt5-base or download the QTCreator IDE from www.qt.io/download)
