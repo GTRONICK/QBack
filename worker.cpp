@@ -19,6 +19,7 @@ Worker::Worker(QObject *parent) :
     giFoldersCounter = 0;
     giTotalFilesSize = 0;
     giTotalFilesAccumulator = 0;
+    gbIsRenameEnabled = true;
     gobDirList = new QStringList;
     gobFilesList = new QStringList;
 }
@@ -45,8 +46,8 @@ void Worker::worker_slot_setStopFlag(int value)
 void Worker::worker_slot_createDirs(QString sourceFileOrFolder,QString destinationFolder,int giKeep)
 {
     if(giKeep == 0){
-        if(!copyRecursively(sourceFileOrFolder,destinationFolder)){
-            emit(worker_signal_logInfo("Folder can't be copied!"));
+        if(!copyDirsRecursively(sourceFileOrFolder,destinationFolder)){
+            emit(worker_signal_logInfo("Folder can't be copied!, it may already exist in the destintaion target"));
             emit(worker_signal_showMessage("Folder cannot be copied. It may already exist or you don't have enought permissions \nOpen the target and verify if it already exist"));
             this->worker_slot_setStopFlag(1);
         }else{
@@ -57,8 +58,6 @@ void Worker::worker_slot_createDirs(QString sourceFileOrFolder,QString destinati
 
 void Worker::worker_slot_readyToStartCopy()
 {
-    // qDebug() << "worker: readyToStartCopy SIGNAL received";
-    // qDebug() << "worker: Emmiting sendDirAndFileList SIGNAL";
     emit(worker_signal_sendDirAndFileList(gobDirList,gobFilesList));
 }
 
@@ -67,17 +66,30 @@ void Worker::worker_slot_copyFile(QString srcFilePath, QString tgtFilePath)
     // qDebug() << "worker: copyFile SIGNAL received with " << srcFilePath << ", " << tgtFilePath;
     QString fileName;
     QString extension = "";
+    QStringList matches;
+
     if(!QFileInfo(srcFilePath).completeSuffix().isEmpty()){
         extension = "."+QFileInfo(srcFilePath).completeSuffix();
     }
 
     fileName = QFileInfo(srcFilePath).baseName() + extension;
 
+    gobFile = new QFile(srcFilePath);
+
+    if(gbIsRenameEnabled){
+
+        matches = gobFilesList->filter(QRegExp(fileName));
+
+        if(matches.length() > 1){
+            fileName = QFileInfo(srcFilePath).baseName() +
+                    "_" + QFileInfo(srcFilePath).dir().absolutePath().replace(QRegExp("[\\/:]"),"_") +
+                    extension;
+        }
+    }
+
     if (QFile::exists(tgtFilePath+"/"+fileName)){
         QFile::remove(tgtFilePath+"/"+fileName);
     }
-
-    gobFile = new QFile(srcFilePath);
 
     emit(worker_signal_statusInfo("Copying file #" + QString::number(giCurrentFileIndex + 1) + " : " + fileName));
 
@@ -174,39 +186,59 @@ void Worker::worker_slot_scanNextPath()
     }
 }
 
-bool Worker::copyRecursively(QString srcFilePath, QString tgtFilePath)
+void Worker::worker_slot_renameEnable(bool value)
+{
+    gbIsRenameEnabled = value;
+}
+
+/**
+  Copies directories recursively.
+  @param srcFilePath Source folder.
+  @param tgtFilePath Target folder.
+  @return True, if the copy was successful, false otherwise.
+*/
+bool Worker::copyDirsRecursively(QString srcFilePath, QString tgtFilePath)
 {   
+    QString lsTargetDir;
+    bool unixHidden;
     QFileInfo source(srcFilePath);
     QDir::Filters lobFilters = QDir::AllEntries | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System | QDir::NoSymLinks;
 
+    if(!createDirectory(tgtFilePath)){
+        emit(worker_signal_logInfo("Folder: " + tgtFilePath + " cannot be created. You have no write permissions on the target."));
+        emit(worker_signal_showMessage("Error creating target folder. See the log for details."));
+        return false;
+    }
+
     if(source.isDir()){
-        QDir leafDir(srcFilePath);
-        leafDir.setFilter(lobFilters);
+
+        QDir sourceDir(srcFilePath);
+        QStringList fileNames = sourceDir.entryList(lobFilters);
+
+        sourceDir.setFilter(lobFilters);
+
         if(source.baseName().isEmpty()){
-            if(!leafDir.mkdir(tgtFilePath + QLatin1Char('/') + "." + source.completeSuffix())){
-                // qDebug() << "Folder " + tgtFilePath + QLatin1Char('/') + "." + source.completeSuffix() + " cannot be copied!";
-                return false;
-            }
-
-            QDir sourceDir(srcFilePath);
-            QStringList fileNames = sourceDir.entryList(lobFilters);
-            for(int index = 0; index < fileNames.length(); index ++){
-                copyRecursively(sourceDir.absolutePath() + "/" + fileNames.at(index),tgtFilePath + QLatin1Char('/') + "." + source.completeSuffix());
-            }
-
+            lsTargetDir = tgtFilePath + QLatin1Char('/') + "." + source.completeSuffix();
+            unixHidden = true;
         }else{
-            if(!leafDir.mkdir(tgtFilePath + QLatin1Char('/') + source.baseName())){
-                // qDebug() << "Folder " << leafDir << " cannot be copied!";
-                return false;
-            }else{
+            lsTargetDir = tgtFilePath + QLatin1Char('/') + source.baseName();
+            unixHidden = false;
+        }
 
-                QDir sourceDir(srcFilePath);
-                QStringList fileNames = sourceDir.entryList(lobFilters);
-                for(int index = 0; index < fileNames.length(); index ++){
-                    copyRecursively(sourceDir.absolutePath() + "/" + fileNames.at(index),tgtFilePath + QLatin1Char('/') + source.baseName());
-                }
+        if(!sourceDir.mkdir(lsTargetDir)){
+            emit(worker_signal_logInfo("Folder: " + lsTargetDir + " cannot be created. It may already exist"));
+        }
+
+        if(unixHidden) {
+            for(int index = 0; index < fileNames.length(); index ++){
+                copyDirsRecursively(sourceDir.absolutePath() + "/" + fileNames.at(index),tgtFilePath + QLatin1Char('/') + "." + source.completeSuffix());
+            }
+        }else {
+            for(int index = 0; index < fileNames.length(); index ++){
+                copyDirsRecursively(sourceDir.absolutePath() + "/" + fileNames.at(index),tgtFilePath + QLatin1Char('/') + source.baseName());
             }
         }
+
 
     }else{
 
@@ -217,6 +249,15 @@ bool Worker::copyRecursively(QString srcFilePath, QString tgtFilePath)
         }
     }
 
+    return true;
+}
+
+bool Worker::createDirectory(QString path)
+{
+    QDir targetDir(path);
+    if(!targetDir.mkpath(path)){
+        return false;
+    }
     return true;
 }
 
