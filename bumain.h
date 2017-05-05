@@ -33,8 +33,9 @@ signals:
     void main_signal_copyFile(QString file,QString path);
     void main_signal_logInfo(QString info);
     void main_signal_scanFolders(QString folderPath);
-    void main_signal_setTextEdit(QTextEdit *textEdit);
+    void main_signal_setTextEdit(QPlainTextEdit *textEdit);
     void main_signal_scanNextPath();
+    void main_signal_renameEnable(bool value);
 
 private slots:
     void on_backupButton_clicked();
@@ -63,6 +64,9 @@ private slots:
     void main_slot_disableFileScan();
     void main_slot_enableFileScan();
     void on_actionDefault_theme_triggered();
+    void main_slot_processDropEvent(QDropEvent *event);
+
+    void on_actionEnable_auto_rename_toggled(bool arg1);
 
 private:
     void initThreadSetup();
@@ -74,6 +78,7 @@ private:
     void on_cancelButton_clicked();
     void resetCounters();
     void checkBackupButton();
+    void resetState();
 
     Ui::BUMain *ui;
     QThread *thread;
@@ -87,9 +92,9 @@ private:
     SearchDialog *gobSearchDialog;
 
     int giKeep;                     //Stop copy flag
-    int giCurrentPos;               //Current carret position in the fromFilesTextArea
-    int giFlag;
-    int giControl;
+    int giCurrentPos;               //Current carret position in the fromFilesTextArea for the ',' character
+    int giCurrentNumPos;            //Current carret position in the fromFilesTextArea for the '#' character
+    int giCountingControl;          //File counting control flag
 
     int giTotalFiles;               //Total files counter
     int giTotalFolders;             //Total folder counter
@@ -104,7 +109,7 @@ private:
     int giCopyFileIndex;            //Index for the current file being copied
     int giPathIndex;
     bool gbBackcupButtonPressed;    //Backup button control flag (true if pressed)
-    bool gbCountCancel;             //Flag for file counting control
+    bool gbCountCancel;             //Flag for interrupt the file counting on text change, into the sources text edit.
 
 };
 
