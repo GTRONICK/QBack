@@ -26,7 +26,7 @@ private slots:
     void on_searchDialog_searchButton_clicked();
     void on_searchDialog_replaceButton_clicked();
     void on_searchDialog_replaceAllButton_clicked();
-    void search_slot_setTextEdit(QTextEdit *textEdit);
+    void search_slot_setTextEdit(QPlainTextEdit *textEdit);
 
     void on_gobSwapTextButton_clicked();
 
@@ -39,7 +39,7 @@ private:
     bool gbReplaceClicked;
     bool gbSearchClicked;
     QString gsFoundText;
-    QTextEdit *gobTextEdit;
+    QPlainTextEdit *gobTextEdit;
 };
 
 #endif // SEARCHDIALOG_H
