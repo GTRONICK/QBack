@@ -58,22 +58,22 @@ QBack lets you copy files from several paths, to several targets. You can also s
   1. Open your file explorer and copy the file paths to the sources text area and append a comma at the end of each path, or drag and drop the files.
   2. If you want to copy a file to a certain target, use the '>' symbol, for example:
   
-  /home/$USER/Downloads/Script.sh>/user/MyUser/media/USB_Storage,  
-  /home/$USER/Documents/TextDocument.txt>/home/MyUser/BackupFolder,  
-  /home/$USER/Downloads/QBack.sh,  
-  /home/$USER/Documents/Text.txt,  
+    /home/$USER/Downloads/Script.sh>/user/MyUser/media/USB_Storage,  
+    /home/$USER/Documents/TextDocument.txt>/home/MyUser/BackupFolder,  
+    /home/$USER/Downloads/QBack.sh,  
+    /home/$USER/Documents/Text.txt,  
    
   This will cause QBack to copy the file Script.sh to /user/MyUser/media/USB_Storage, the file TextDocument.txt will be copied to /home/MyUser/BackupFolder, QBack.sh and Text.txt, will be copied to the default folder typed in the target line edit.
   
 ## E. Commenting paths:
 
-If you don't want to copy certain file in the list, just add the '#' sign to the start of the path to avoid its copy, for example:
+  1. If you don't want to copy certain file in the list, just add the '#' sign to the start of the path to avoid its copy, for example:  
 
-  #/home/$USER/Downloads/Script.sh>/user/MyUser/media/USB_Storage,  
-  /home/$USER/Documents/TextDocument.txt>/home/MyUser/BackupFolder,  
-  #/home/$USER/Downloads/QBack.sh,  
-  /home/$USER/Documents/Text.txt,    
-  
+    #/home/$USER/Downloads/Script.sh>/user/MyUser/media/USB_Storage,  
+    /home/$USER/Documents/TextDocument.txt>/home/MyUser/BackupFolder,  
+    #/home/$USER/Downloads/QBack.sh,  
+    /home/$USER/Documents/Text.txt,  
+    
   This will avoid the copy of Script.sh, and QBack.sh.
 
 # 2. HOW TO BUILD FROM SOURCE
