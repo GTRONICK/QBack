@@ -20,15 +20,15 @@ QBack lets you copy files from several paths, to several targets. You can also s
   1. Open your file explorer and copy the folder paths to the black text box, end each folder path with comma "," , for example: 
   You can also drag and drop the folder into the sources text area.
 
-### In Linux: 
+  ### In Linux: 
 
-  /home/$USER/Downloads,  
-  /home/$USER/FilesToCopy,  
+    /home/$USER/Downloads,  
+    /home/$USER/FilesToCopy,  
   
-### In Windows:
-  
-  D:\DocumentsToCopy\Folder,  
-  C:\Documents and settings\MyAppData\Game,  
+  ### In Windows:
+
+    D:\DocumentsToCopy\Folder,  
+    C:\Documents and settings\MyAppData\Game,  
 
   2. Click on the "target" button to choose the destination folder.
   3. If you want to inspect the target folder before copy, click on "Open target".
@@ -39,15 +39,15 @@ QBack lets you copy files from several paths, to several targets. You can also s
   1. Open your file explorer and copy the file paths to the black text box, end each file path with comma "," , for example:
   You can also drag and drop the files into the sources text area. QBack will adapt the path adding the comma sign at the end.
 
-### In Linux:
+  ### In Linux:
 
-  /home/$USER/Downloads/Script.sh,  
-  /home/$USER/Documents/TextDocument.txt,  
+    /home/$USER/Downloads/Script.sh,  
+    /home/$USER/Documents/TextDocument.txt,  
 
-### In Windows:
+  ### In Windows:
 
-  D:\DocumentsToCopy\Folder\WordDocument.docx,  
-  C:\Documents and settings\MyAppData\Game\Textures.mod,  
+    D:\DocumentsToCopy\Folder\WordDocument.docx,  
+    C:\Documents and settings\MyAppData\Game\Textures.mod,  
 
   2. Click on the "Target" button to choose the destination folder.
   3. If you want to inspect the target folder before copy, click on "Open target".
