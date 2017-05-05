@@ -3,6 +3,9 @@
 #include <QPlainTextEdit>
 #include <QDebug>
 
+/**
+  Object's constructor.
+*/
 SearchDialog::SearchDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::SearchDialog)
@@ -13,30 +16,67 @@ SearchDialog::SearchDialog(QWidget *parent) :
     gbReplaceAllClicked = false;
 }
 
+/**
+  Object's destructor.
+*/
 SearchDialog::~SearchDialog()
 {
     delete ui;
 }
 
+/**
+  Action triggered when the search button is clicked.
+  This will rise a flag, which will be used in the
+  setTextEdit method.
+*/
 void SearchDialog::on_searchDialog_searchButton_clicked()
 {
     gbSearchClicked = true;
     emit(search_signal_getTextEditText());
 }
 
+/**
+  Action triggered when the replace button is clicked.
+  This will rise a flag, which will be used in the
+  setTextEdit method.
+*/
 void SearchDialog::on_searchDialog_replaceButton_clicked()
 {
     gbReplaceClicked = true;
     emit(search_signal_getTextEditText());
 }
 
+/**
+  Action triggered when the replace all button is clicked.
+  This will rise a flag, which will be used in the
+  setTextEdit method.
+*/
 void SearchDialog::on_searchDialog_replaceAllButton_clicked()
 {
     gbReplaceAllClicked = true;
     emit(search_signal_getTextEditText());
 }
 
-void SearchDialog::search_slot_setTextEdit(QTextEdit *textEdit)
+/**
+  Action triggered when the swap button is clicked.
+  This will swap the text into the "search" line edit, with the
+  text into the "reaplace all" line edit.
+*/
+void SearchDialog::on_gobSwapTextButton_clicked()
+{
+    QString lsReplace;
+    lsReplace = this->ui->seachDialog_searchLineEdit->text();
+    this->ui->seachDialog_searchLineEdit->setText(this->ui->searchDialog_replaceLineEdit->text());
+    this->ui->searchDialog_replaceLineEdit->setText(lsReplace);
+}
+
+/**
+  Creates a copy of the TextEdit object, and dependign on
+  the clicked button, the according action modifications
+  will be made. Then, the new object will be send in a signal
+  to the main UI.
+*/
+void SearchDialog::search_slot_setTextEdit(QPlainTextEdit *textEdit)
 {
     this->gobTextEdit = textEdit;
 
@@ -50,24 +90,21 @@ void SearchDialog::search_slot_setTextEdit(QTextEdit *textEdit)
         gobTextEdit->extraSelections().clear();
         gobTextEdit->textCursor().clearSelection();
 
-        if(!ui->searchDialog_replaceLineEdit->text().isEmpty()){
 
-            emit(search_signal_resetCursor());
-            gsFoundText = ui->seachDialog_searchLineEdit->text();
-            while(gobTextEdit->find(ui->seachDialog_searchLineEdit->text())){
-                selection.cursor = gobTextEdit->textCursor();
-                extraSelections.append(selection);
-            }
-            gobTextEdit->setExtraSelections(extraSelections);
+        emit(search_signal_resetCursor());
+        gsFoundText = ui->seachDialog_searchLineEdit->text();
+        while(gobTextEdit->find(ui->seachDialog_searchLineEdit->text())){
+            selection.cursor = gobTextEdit->textCursor();
+            extraSelections.append(selection);
+        }
+        gobTextEdit->setExtraSelections(extraSelections);
 
-            QTextCursor cursor;
+        QTextCursor cursor;
 
-            for(int i=0; i < extraSelections.length(); i++){
+        for(int i=0; i < extraSelections.length(); i++){
 
-                cursor = extraSelections.at(i).cursor;
-                cursor.insertText(ui->searchDialog_replaceLineEdit->text());
-
-            }
+            cursor = extraSelections.at(i).cursor;
+            cursor.insertText(ui->searchDialog_replaceLineEdit->text());
         }
 
         gsFoundText = "";
@@ -129,12 +166,4 @@ void SearchDialog::search_slot_setTextEdit(QTextEdit *textEdit)
         ui->searchDialog_replaceButton->setEnabled(false);
 
     }
-}
-
-void SearchDialog::on_gobSwapTextButton_clicked()
-{
-    QString lsReplace;
-    lsReplace = this->ui->seachDialog_searchLineEdit->text();
-    this->ui->seachDialog_searchLineEdit->setText(this->ui->searchDialog_replaceLineEdit->text());
-    this->ui->searchDialog_replaceLineEdit->setText(lsReplace);
 }
