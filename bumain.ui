@@ -232,14 +232,14 @@
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_2">
           <item>
-           <widget class="QTextEdit" name="fromFilesTextArea">
+           <widget class="CustomTextEdit" name="fromFilesTextArea">
             <property name="font">
              <font>
               <pointsize>10</pointsize>
              </font>
             </property>
             <property name="lineWrapMode">
-             <enum>QTextEdit::NoWrap</enum>
+             <enum>QPlainTextEdit::NoWrap</enum>
             </property>
            </widget>
           </item>
@@ -441,6 +441,8 @@
     </property>
     <addaction name="actionLoad_theme"/>
     <addaction name="actionDefault_theme"/>
+    <addaction name="separator"/>
+    <addaction name="actionEnable_auto_rename"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -512,8 +514,37 @@
     <string>Default theme</string>
    </property>
   </action>
+  <action name="actionDisable_folder_overwriting">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Folder overwriting</string>
+   </property>
+  </action>
+  <action name="actionEnable_auto_rename">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Enable auto rename</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>CustomTextEdit</class>
+   <extends>QPlainTextEdit</extends>
+   <header location="global">customtextedit.h</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="img/icons.qrc"/>
  </resources>
