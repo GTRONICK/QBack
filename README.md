@@ -17,8 +17,8 @@ QBack lets you copy files from several paths, to several targets. You can also s
 
 ## B. Copying several folders recursively:
 
-  1. Open your file explorer and copy the folder paths to the black text box, end each folder path with comma "," , for example: 
-  You can also drag and drop the folder into the sources text area.
+  1. Open your file explorer and copy the folder paths to the sources text area, end each folder path with comma ","; for example: 
+  
 
   ### In Linux: 
 
@@ -29,6 +29,8 @@ QBack lets you copy files from several paths, to several targets. You can also s
 
     D:\DocumentsToCopy\Folder,  
     C:\Documents and settings\MyAppData\Game,  
+    
+  You can also drag and drop the folders into the sources text area. QBack will adapt the path adding the comma sign at the end.
 
   2. Click on the "target" button to choose the destination folder.
   3. If you want to inspect the target folder before copy, click on "Open target".
@@ -36,9 +38,8 @@ QBack lets you copy files from several paths, to several targets. You can also s
 
 ## C. Copying several files:
 
-  1. Open your file explorer and copy the file paths to the black text box, end each file path with comma "," , for example:
-  You can also drag and drop the files into the sources text area. QBack will adapt the path adding the comma sign at the end.
-
+  1. Open your file explorer and copy the file paths to the sources text area, end each file path with comma ","; for example:
+ 
   ### In Linux:
 
     /home/$USER/Downloads/Script.sh,  
@@ -49,6 +50,8 @@ QBack lets you copy files from several paths, to several targets. You can also s
     D:\DocumentsToCopy\Folder\WordDocument.docx,  
     C:\Documents and settings\MyAppData\Game\Textures.mod,  
 
+  You can also drag and drop the files into the sources text area. QBack will adapt the path adding the comma sign at the end.
+  
   2. Click on the "Target" button to choose the destination folder.
   3. If you want to inspect the target folder before copy, click on "Open target".
   4. Click on the "Backup button" to start the copy.
@@ -81,10 +84,10 @@ QBack lets you copy files from several paths, to several targets. You can also s
 
 QT5 must be installed. (qt5-base or download the QTCreator IDE from www.qt.io/download)
 
-  1. qmake QBack.pro
-  2. make all -j4
-  3. make clean
+    qmake QBack.pro
+    make all -j4
+    make clean
 
-Alternatively, you can use QTCreator 5.7+ to load the project, and compile it for your distribution and architecture.
+Alternatively, you can use QTCreator 5.8+ to load the project, and compile it for your distribution and architecture.
 
 
