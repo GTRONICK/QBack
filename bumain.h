@@ -41,17 +41,21 @@ private slots:
     void on_backupButton_clicked();
     void on_originButton_clicked();
     void on_targetButton_clicked();
-    void on_toFilesTextField_textChanged();
     void on_openTargetButton_clicked();
-    void on_fromFilesTextArea_textChanged();
     void on_logViewerButton_clicked();
+
+    void on_fromFilesTextArea_textChanged();
+    void on_toFilesTextField_textChanged();
+
     void on_actionQuit_triggered();
     void on_actionAbout_triggered();
+    void on_actionDefault_theme_triggered();
     void on_actionOpen_session_triggered();
     void on_actionLoad_theme_triggered();
     void on_actionSave_session_triggered();
     void on_actionFind_in_sources_triggered();
-    void main_slot_showMessage(QString message);
+
+    void main_slot_showMessage(QString message, int messageType);
     void main_slot_keepCopying();
     void main_slot_setStatus(QString status);
     void main_slot_receiveDirAndFileList(QStringList *dirs, QStringList *files);
@@ -63,10 +67,11 @@ private slots:
     void main_slot_scanReady();
     void main_slot_disableFileScan();
     void main_slot_enableFileScan();
-    void on_actionDefault_theme_triggered();
     void main_slot_processDropEvent(QDropEvent *event);
+    void main_slot_errorOnCopy();
 
     void on_actionEnable_auto_rename_toggled(bool arg1);
+
 
 private:
     void initThreadSetup();
@@ -79,6 +84,7 @@ private:
     void resetCounters();
     void checkBackupButton();
     void resetState();
+    QString removeTrailingSlashes(QString str);
 
     Ui::BUMain *ui;
     QThread *thread;
@@ -110,6 +116,8 @@ private:
     int giPathIndex;
     bool gbBackcupButtonPressed;    //Backup button control flag (true if pressed)
     bool gbCountCancel;             //Flag for interrupt the file counting on text change, into the sources text edit.
+
+    int giErrorOnCopyFlag;
 
 };
 
