@@ -20,8 +20,9 @@ signals:
     void worker_Signal_updateProgressBar(int value);
     void worker_signal_keepCopying();
     void worker_signal_logInfo(QString info);
+    void worker_signal_errorOnCopy();
     void worker_signal_statusInfo(QString info);
-    void worker_signal_showMessage(QString message);
+    void worker_signal_showMessage(QString message, int messageType);
     void worker_signal_sendDirAndFileList(QStringList *, QStringList *);
     void worker_signal_setTotalFilesAndFolders(int totalFiles, int totalFolders, qint64 totalFileSize);
     void worker_signal_copyNextFile();

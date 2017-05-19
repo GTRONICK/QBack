@@ -47,8 +47,8 @@ void Worker::worker_slot_createDirs(QString sourceFileOrFolder,QString destinati
 {
     if(giKeep == 0){
         if(!copyDirsRecursively(sourceFileOrFolder,destinationFolder)){
-            emit(worker_signal_logInfo("Folder can't be copied!, it may already exist in the destintaion target"));
-            emit(worker_signal_showMessage("Folder cannot be copied. It may already exist or you don't have enought permissions \nOpen the target and verify if it already exist"));
+            emit worker_signal_logInfo("Folder can't be copied!, it may already exist in the destintaion target");
+            emit worker_signal_showMessage("Folder cannot be copied. It may already exist or you don't have enought permissions \nOpen the target and verify if it already exist", QMessageBox::Critical);
             this->worker_slot_setStopFlag(1);
         }else{
             emit(worker_signal_keepCopying());
@@ -103,23 +103,24 @@ void Worker::worker_slot_copyFile(QString srcFilePath, QString tgtFilePath)
             emit(worker_Signal_updateProgressBar(giCurrentFileIndex));
         }else{
             if(!QFile(srcFilePath).exists()){
-                emit(worker_signal_logInfo(QDateTime::currentDateTime().toString() + " ERROR! File: " + fileName + " does not exist."));
+                emit(worker_signal_logInfo(QDateTime::currentDateTime().toString() + " ERROR! File: " + srcFilePath + " does not exist."));
             }else if(!QDir(tgtFilePath).exists()){
                 emit(worker_signal_logInfo(QDateTime::currentDateTime().toString() + " ERROR! Folder: " + tgtFilePath + " does not exist."));
             }else{
-                emit(worker_signal_logInfo(QDateTime::currentDateTime().toString() + " ERROR! File: " + fileName + " could not be copied. The file might be locked by another process."));
+                emit(worker_signal_logInfo(QDateTime::currentDateTime().toString() + " ERROR! File: " + srcFilePath + " could not be copied. The file might be locked by another process."));
             }
+            emit worker_signal_errorOnCopy();
         }
-
         // qDebug() << "worker: Emmiting SIGNAL copyNextFile";
         emit(worker_signal_copyNextFile());
+
     }
 }
 
 void Worker::worker_slot_scanFolders(QString aobFolderPath)
 {
     // qDebug() << "Worker: scanFolders SIGNAL received";
-    emit(worker_signal_statusInfo("Counting files, please wait..."));
+    emit worker_signal_statusInfo("Counting files, please wait...");
     giFoldersCounter = 0;
     giFileCounter = 0;
     giTotalFilesSize = 0;
@@ -152,14 +153,17 @@ void Worker::countAllFiles(QString path)
 
             if(giFileCounter % 50 == 0) emit(worker_signal_setTotalFilesAndFolders(giFileCounter,giFoldersCounter,giTotalFilesSize / 1000000));
             // qDebug() << "worker: Emitting scanReady SIGNAL";
-            emit(worker_signal_scanReady());
+            emit worker_signal_scanReady();
+        }else{
+            emitCountersSignals();
+            emit worker_signal_workerDone();
         }
 
     }else{
         giFileCounter ++;
         giTotalFilesSize += (lobFileInfo.size());
         emitCountersSignals();
-        emit(worker_signal_workerDone());
+        emit worker_signal_workerDone();
     }
 }
 
@@ -182,7 +186,7 @@ void Worker::worker_slot_scanNextPath()
         emitFlag = 1;
         // qDebug() << "worker: Emitting counters SIGNALS from worker_slot_scanNextPath";
         emitCountersSignals();
-        emit(worker_signal_workerDone());
+        emit worker_signal_workerDone();
     }
 }
 
@@ -205,8 +209,8 @@ bool Worker::copyDirsRecursively(QString srcFilePath, QString tgtFilePath)
     QDir::Filters lobFilters = QDir::AllEntries | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System | QDir::NoSymLinks;
 
     if(!createDirectory(tgtFilePath)){
-        emit(worker_signal_logInfo("Folder: " + tgtFilePath + " cannot be created. You have no write permissions on the target."));
-        emit(worker_signal_showMessage("Error creating target folder. See the log for details."));
+        emit worker_signal_logInfo("Folder: " + tgtFilePath + " cannot be created. You have no write permissions on the target.");
+        emit worker_signal_showMessage("Error creating target folder. See the log for details.", QMessageBox::Critical);
         return false;
     }
 
@@ -226,7 +230,7 @@ bool Worker::copyDirsRecursively(QString srcFilePath, QString tgtFilePath)
         }
 
         if(!sourceDir.mkdir(lsTargetDir)){
-            emit(worker_signal_logInfo("Folder: " + lsTargetDir + " cannot be created. It may already exist"));
+            emit worker_signal_logInfo("Folder: " + lsTargetDir + " cannot be created. It may already exist");
         }
 
         if(unixHidden) {
@@ -238,7 +242,6 @@ bool Worker::copyDirsRecursively(QString srcFilePath, QString tgtFilePath)
                 copyDirsRecursively(sourceDir.absolutePath() + "/" + fileNames.at(index),tgtFilePath + QLatin1Char('/') + source.baseName());
             }
         }
-
 
     }else{
 

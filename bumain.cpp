@@ -34,6 +34,7 @@ BUMain::BUMain(QWidget *parent) :
     giCopyFileIndex = 0;
     validatorFlag = 0;
     giCountingControl = 0;
+    giErrorOnCopyFlag = 0;
 
     gbBackcupButtonPressed = false;
     gbCountCancel = false;
@@ -104,7 +105,7 @@ void BUMain::initThreadSetup()
     connect(worker,SIGNAL(worker_signal_keepCopying()),this,SLOT(main_slot_keepCopying()));
     connect(worker,SIGNAL(worker_signal_logInfo(QString)),gobLogViewer,SLOT(logger_slot_logInfo(QString)));
     connect(worker,SIGNAL(worker_signal_statusInfo(QString)),this,SLOT(main_slot_setStatus(QString)));
-    connect(worker,SIGNAL(worker_signal_showMessage(QString)),this,SLOT(main_slot_showMessage(QString)));
+    connect(worker,SIGNAL(worker_signal_showMessage(QString,int)),this,SLOT(main_slot_showMessage(QString,int)));
     connect(this,SIGNAL(main_signal_setStopFlag(int)),worker,SLOT(worker_slot_setStopFlag(int)));
     connect(this,SIGNAL(main_signal_readyToStartCopy()),worker,SLOT(worker_slot_readyToStartCopy()));
     connect(worker,SIGNAL(worker_signal_sendDirAndFileList(QStringList*,QStringList*)),this,SLOT(main_slot_receiveDirAndFileList(QStringList*,QStringList*)));
@@ -123,6 +124,7 @@ void BUMain::initThreadSetup()
     connect(gobSearchDialog, SIGNAL(search_signal_disableFilescan()), this, SLOT(main_slot_disableFileScan()));
     connect(this->ui->fromFilesTextArea,SIGNAL(processDropEvent(QDropEvent*)),this,SLOT(main_slot_processDropEvent(QDropEvent*)));
     connect(this,SIGNAL(main_signal_renameEnable(bool)),worker,SLOT(worker_slot_renameEnable(bool)));
+    connect(worker,SIGNAL(worker_signal_errorOnCopy()),this,SLOT(main_slot_errorOnCopy()));
     connect(thread,SIGNAL(finished()),worker,SLOT(deleteLater()));
     connect(thread,SIGNAL(finished()),thread,SLOT(deleteLater()));
     thread->start();
@@ -177,6 +179,7 @@ bool BUMain::saveSessionToFile(QString filePath)
 */
 void BUMain::on_backupButton_clicked()
 {
+    giErrorOnCopyFlag = 0;
     QString lsCurrentPath = "";
     if(gbBackcupButtonPressed == false){
 
@@ -194,9 +197,12 @@ void BUMain::on_backupButton_clicked()
                 i --;
             }
         }
+
         for(int i = 0; i < gobPaths.length(); i++){
             gobPaths.replace(i,gobPaths.at(i).trimmed());
-            if(ui->toFilesTextField->text().contains(gobPaths.at(i))){
+            lsCurrentPath = gobPaths.at(i);
+            lsCurrentPath = removeTrailingSlashes(lsCurrentPath);
+            if(ui->toFilesTextField->text().contains(lsCurrentPath)){
                 recursiveAlertFlag = 1;
                 i = gobPaths.length() + 2;
             }
@@ -220,12 +226,12 @@ void BUMain::on_backupButton_clicked()
             emit(main_signal_setStopFlag(0));
             if(firstPath.contains(">") && firstPath.lastIndexOf(">") != firstPath.length()){
                 //qDebug() << "Custom path found";
-                emit(main_signal_createDirs(firstPath.split(">").at(0),firstPath.split(">").at(1),giKeep));
+                emit main_signal_createDirs(firstPath.split(">").at(0),firstPath.split(">").at(1),giKeep);
             }else{
-                emit(main_signal_createDirs(gobPaths.at(0),ui->toFilesTextField->text().trimmed(),giKeep));
+                emit main_signal_createDirs(gobPaths.at(0),ui->toFilesTextField->text().trimmed(),giKeep);
             }
         }else{
-            QMessageBox::critical(this,"Recursive operation alert!","The target folder contains a source folder");
+            this->main_slot_showMessage("Recursive operation! \nThe target folder contains a source folder",QMessageBox::Critical);
         }
     }else{
 
@@ -331,7 +337,7 @@ void BUMain::main_slot_keepCopying()
 
 /**
   Slot triggered when any class need to show a message in the status bar.
-  @param QString message to be shown.
+  @param Message to be shown.
 */
 void BUMain::main_slot_setStatus(QString status)
 {
@@ -363,9 +369,8 @@ void BUMain::main_slot_copyNextFile()
         emit(main_signal_copyFile(sourceFiles->at(giCopyFileIndex),targetDirectories->at(giCopyFileIndex)));
     }else{
         // qDebug() << "Copy finished.";
-        gbBackcupButtonPressed = false;
-        this->ui->backupButton->setText("&Backup!");
-        this->ui->backupButton->setIcon(QIcon(":/icons/backupButton.png"));
+        if(giErrorOnCopyFlag == 0) this->main_slot_showMessage("Copy Finished",QMessageBox::Information);
+        else this->main_slot_showMessage("Copy Finished with errors! \nSee the log for details.",QMessageBox::Critical);
     }
 }
 
@@ -391,6 +396,9 @@ void BUMain::main_slot_setTotalFilesAndFolders(int aiFileCounter,int aiFolderCou
     }
 }
 
+/**
+  Slot triggered wheb the counting of files and folders ends.
+*/
 void BUMain::main_slot_workerDone()
 {
     if(giCountingControl == 1){
@@ -421,7 +429,6 @@ void BUMain::main_slot_getTextEdit()
 
 void BUMain::on_openTargetButton_clicked()
 {
-
     ui->toFilesTextField->setText(ui->toFilesTextField->text().trimmed());
 
     if(ui->toFilesTextField->text() != NULL &&
@@ -430,14 +437,13 @@ void BUMain::on_openTargetButton_clicked()
     {
         if(!QDesktopServices::openUrl(QUrl::fromLocalFile(ui->toFilesTextField->text())))
         {
-            QMessageBox::critical(this,"Error","Target folder \"" + ui->toFilesTextField->text() + "\" not found!");
+            this->main_slot_showMessage("Target folder \"" + ui->toFilesTextField->text() + "\" not found!",QMessageBox::Critical);
         }
     }
 }
 
 void BUMain::on_fromFilesTextArea_textChanged()
 {
-
     resetCounters();
     QString lsCurrentPath = "";
     QString lsAreaText = ui->fromFilesTextArea->toPlainText();
@@ -477,7 +483,6 @@ void BUMain::on_fromFilesTextArea_textChanged()
 
 void BUMain::main_slot_scanReady()
 {
-
     // qDebug() << "main: scanReady SIGNAL received";
     if(gbCountCancel == false ){
         // qDebug() << "main: Emitting scanNextPath SIGNAL";
@@ -498,13 +503,27 @@ void BUMain::main_slot_enableFileScan()
     this->on_fromFilesTextArea_textChanged();
 }
 
-void BUMain::main_slot_showMessage(QString message)
+void BUMain::main_slot_showMessage(QString message, int messageType)
 {
-    QMessageBox::critical(this,"Error",message,QMessageBox::Ok,QMessageBox::Ok);
+    giCopyFileIndex = 0;
     this->ui->backupButton->setText("&Backup!");
     this->ui->backupButton->setIcon(QIcon(":/icons/backupButton.png"));
     gbBackcupButtonPressed = false;
-    giCopyFileIndex = 0;
+
+    switch (messageType) {
+    case QMessageBox::Critical:
+        QMessageBox::critical(this,"Error",message,QMessageBox::Ok,QMessageBox::Ok);
+        break;
+    case QMessageBox::Information:
+        QMessageBox::information(this,"Information",message,QMessageBox::Ok,QMessageBox::Ok);
+        break;
+    case QMessageBox::Warning:
+        QMessageBox::warning(this,"Warning",message,QMessageBox::Ok,QMessageBox::Ok);
+        break;
+    default:
+        QMessageBox::critical(this,"Warning","An error has occurred",QMessageBox::Ok,QMessageBox::Ok);
+        break;
+    }
 }
 
 void BUMain::on_logViewerButton_clicked()
@@ -514,7 +533,6 @@ void BUMain::on_logViewerButton_clicked()
 
 void BUMain::on_cancelButton_clicked()
 {
-
     giKeep = 1;
     ui->statusBar->showMessage("Cancelling...");
     emit(main_signal_setStopFlag(1));
@@ -566,6 +584,12 @@ void BUMain::loadSessionFile(QString asFilePath)
     this->main_slot_enableFileScan();
 }
 
+/**
+  Method to validate the source files number, and target.
+  Only when the source files number is greater than 0, and
+  there is a string in the target line, the backup button
+  will be enabled.
+*/
 void BUMain::checkBackupButton()
 {
     if(ui->toFilesTextField->text() != ""
@@ -580,6 +604,9 @@ void BUMain::checkBackupButton()
     }
 }
 
+/**
+  Method to reset the counters and application state.
+*/
 void BUMain::resetState()
 {
     giCurrentPos = -1;
@@ -590,7 +617,24 @@ void BUMain::resetState()
     this->ui->totalFileSizeValueLabel->setText("0");
     this->installEventFilters();
     this->main_slot_setStatus("Ready.");
-    ui->backupButton->setEnabled(false);
+    this->ui->backupButton->setEnabled(false);
+}
+
+/**
+  Removes all the trailing slashes and backslashes
+  of the string passed as argument.
+  @param String to crop.
+  @return String without trailing slashes.
+*/
+QString BUMain::removeTrailingSlashes(QString str)
+{
+    int n = str.size() - 1;
+    for (; n >= 0; --n) {
+      if (str.at(n) != "/" && str.at(n) != "\\") {
+        return str.left(n + 1);
+      }
+    }
+    return "";
 }
 
 void BUMain::on_actionQuit_triggered()
@@ -602,18 +646,19 @@ void BUMain::on_actionQuit_triggered()
 void BUMain::on_actionAbout_triggered()
 {
     const char *helpText = ("<h2>QBack</h2>"
-               "<p>Enter each file path ended with comma ( , ) and without trailing spaces."
-               "For example:"
-               "<p>C:\\File.txt,"
-               "<br>C:\\Documents and settings\\Document.pdf,"
-               "<br>/home/user/Documents/script.sh,"
-               "<p>Use the greater than symbol ( > ) in the sources text area, to copy to a different target, for example:"
-               "<br>/home/user/myTextFile.txt>/media/USB/Backup,"
-               "<br>This will copy the myTextFile.txt file to the /media/USB/Backup folder."
-               "<br>Use the has sign ( # ) at the start of a line to comment it, and avoid the copy for that file."
-               "<p>You can paste clipboard contents here, but be sure to end each file path with comma");
+                            "<style>"
+                            "a:link {"
+                              "color: orange;"
+                              "background-color: transparent;"
+                              "text-decoration: none;"
+                            "}"
+                            "</style>"
+                            "<p>Simple but powerful copy utility"
+                            "<p> Jaime A. Quiroga P."
+                            "<p><a href='https://github.com/GTRONICK/QBack/releases/tag/v1.7.0'>Help Manual for this version</a>"
+                            "<p><a href='http://www.gtronick.com'>GTRONICK</a>");
 
-    QMessageBox::about(this, tr("About QBack 1.7.0"),
+    QMessageBox::about(this, tr("About QBack 1.8.0"),
     tr(helpText));
 }
 
@@ -645,7 +690,6 @@ void BUMain::on_actionLoad_theme_triggered()
 
 void BUMain::on_actionSave_session_triggered()
 {
-
     targetFolder = QFileDialog::getSaveFileName(this, tr("Save session"), "", tr("Text files (*.txt);;All files(*.*)"));
 
     if(targetFolder != NULL && targetFolder != ""){
@@ -666,7 +710,6 @@ void BUMain::on_actionDefault_theme_triggered()
 
 void BUMain::main_slot_processDropEvent(QDropEvent *event)
 {
-
     main_slot_disableFileScan();
     const QMimeData* mimeData = event->mimeData();
 
@@ -681,6 +724,11 @@ void BUMain::main_slot_processDropEvent(QDropEvent *event)
     }
     event->acceptProposedAction();
     main_slot_enableFileScan();
+}
+
+void BUMain::main_slot_errorOnCopy()
+{
+    giErrorOnCopyFlag = 1;
 }
 
 void BUMain::on_actionEnable_auto_rename_toggled(bool arg1)

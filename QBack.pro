@@ -17,13 +17,13 @@ SOURCES += main.cpp\
     worker.cpp \
     logviewer.cpp \
     searchdialog.cpp \
-    customTextEdit.cpp
+    customtextedit.cpp
 
 HEADERS  += bumain.h \
     worker.h \
     logviewer.h \
     searchdialog.h \
-    customTextEdit.h
+    customtextedit.h
 
 FORMS    += bumain.ui \
     logviewer.ui \
