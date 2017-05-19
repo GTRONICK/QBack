@@ -15,7 +15,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="img/icons.qrc">
-    <normaloff>:/icons/backup.png</normaloff>:/icons/backup.png</iconset>
+    <normaloff>:/icons/LOGO.png</normaloff>:/icons/LOGO.png</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout_2">
@@ -534,6 +534,17 @@
    </property>
    <property name="text">
     <string>Enable auto rename</string>
+   </property>
+  </action>
+  <action name="actionLock_sources_file_counting">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Pause file counting</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+P</string>
    </property>
   </action>
  </widget>
