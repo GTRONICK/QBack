@@ -9,5 +9,6 @@
         <file>openTargetFolder.png</file>
         <file>splash.PNG</file>
         <file>cancelCopy.png</file>
+        <file>QBackLogo.png</file>
     </qresource>
 </RCC>
