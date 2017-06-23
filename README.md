@@ -1,5 +1,5 @@
 # QBack
-A simple backup utility.
+A simple backup utility but powerful.
 
 ![QBack_GUI](https://sites.google.com/site/gtronick/QBack1.5.0.PNG)
 
