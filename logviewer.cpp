@@ -14,7 +14,9 @@ LogViewer::LogViewer(QWidget *parent) :
     giLogCursorPos = 0;
     giOcurrencesFound = 0;
     gsFoundText = "";
-    this->loadLogFile();
+    if(!this->loadLogFile()){
+        QMessageBox::critical(this,"ERROR","The log file can't be loaded");
+    }
 
     QFile styleFile("style.qss");
     styleFile.open(QFile::ReadOnly);
@@ -54,7 +56,7 @@ void LogViewer::logger_slot_logInfo(QString info)
            return;
 
     QTextStream out(&file);
-    out << info << "\r\n\n";
+    out << info << "\r\n";
     file.close();
 
     if(info.contains(">> ERROR!")){
@@ -87,17 +89,25 @@ void LogViewer::on_findLineEdit_returnPressed()
     }
 }
 
-void LogViewer::loadLogFile()
+bool LogViewer::loadLogFile()
 {
-    QFile file("backup.log");
-    if(file.exists()){
-        if (!file.open(QIODevice::ReadWrite | QIODevice::Text))
-            return;
+    QFile lobFile("backup.log");
+    QString lsText = "";
+    QString line = "";
 
-        QTextStream in(&file);
-           while (!in.atEnd()) {
-               QString line = in.readLine();
-               ui->plainTextEdit->appendPlainText(line);
-           }
+    if(lobFile.exists() && (lobFile.size()/MAX_SIZE) < (MAX_SIZE/1000000)){
+        if (!lobFile.open(QIODevice::ReadWrite | QIODevice::Text)){
+            return false;
+        }
+
+        QTextStream in(&lobFile);
+        while (!in.atEnd()) {
+           line = in.readLine();
+           lsText.append(line + '\n');
+        }
+
+        ui->plainTextEdit->appendPlainText(lsText);
     }
+
+    return true;
 }
