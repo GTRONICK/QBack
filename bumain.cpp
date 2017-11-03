@@ -454,7 +454,6 @@ void BUMain::on_fromFilesTextArea_textChanged()
             && giCountingControl == 1){
 
         ui->overallCopyProgressBar->setMaximum(0);
-        // qDebug() << "main: Comma detected!";
         gobPaths.clear();
         gbCountCancel = false;
         giCurrentPos = lsAreaText.lastIndexOf(",");
@@ -655,10 +654,10 @@ void BUMain::on_actionAbout_triggered()
                             "</style>"
                             "<p>Simple but powerful copy utility"
                             "<p> Jaime A. Quiroga P."
-                            "<p><a href='https://github.com/GTRONICK/QBack/releases/tag/v1.8.0'>Help Manual for this version</a>"
+                            "<p><a href='https://github.com/GTRONICK/QBack/releases/tag/v1.9.0'>Help Manual for this version</a>"
                             "<p><a href='http://www.gtronick.com'>GTRONICK</a>");
 
-    QMessageBox::about(this, tr("About QBack 1.8.0"),
+    QMessageBox::about(this, tr("About QBack 1.9.0"),
     tr(helpText));
 }
 
@@ -667,7 +666,7 @@ void BUMain::on_actionOpen_session_triggered()
     giCountingControl = 0;
     targetFolder = QFileDialog::getOpenFileName(this, tr("Open Session"),
                                                     "",
-                                                    tr("Session files (*.txt);;All files(*.*)"));
+                                                    tr("Text files (*.txt);;All files(*.*)"));
 
     if(targetFolder != NULL && targetFolder != ""){
         loadSessionFile(targetFolder);
@@ -699,7 +698,6 @@ void BUMain::on_actionSave_session_triggered()
 
 void BUMain::on_actionFind_in_sources_triggered()
 {
-    // qDebug() << "Find pressed";
     gobSearchDialog->setVisible(true);
 }
 
@@ -734,4 +732,10 @@ void BUMain::main_slot_errorOnCopy()
 void BUMain::on_actionEnable_auto_rename_toggled(bool arg1)
 {
     emit main_signal_renameEnable(arg1);
+}
+
+void BUMain::on_actionInsert_Target_path_triggered()
+{
+    QTextCursor lobCursor = ui->fromFilesTextArea->textCursor();
+    lobCursor.insertText(">" + ui->toFilesTextField->text() + "/");
 }
