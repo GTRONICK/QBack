@@ -1,5 +1,6 @@
 #ifndef LOGVIEWER_H
 #define LOGVIEWER_H
+#define MAX_SIZE 20000000.0
 
 #include <QWidget>
 
@@ -30,7 +31,7 @@ private:
     int giLogCursorPos;
     int giOcurrencesFound;
     QString gsFoundText;
-    void loadLogFile();
+    bool loadLogFile();
 };
 
 #endif // LOGVIEWER_H
