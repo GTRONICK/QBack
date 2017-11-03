@@ -15,7 +15,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="img/icons.qrc">
-    <normaloff>:/icons/LOGO.png</normaloff>:/icons/LOGO.png</iconset>
+    <normaloff>:/icons/QBackLogo.png</normaloff>:/icons/QBackLogo.png</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout_2">
@@ -455,6 +455,7 @@
      <string>Tools</string>
     </property>
     <addaction name="actionFind_in_sources"/>
+    <addaction name="actionInsert_Target_path"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuSettings"/>
@@ -545,6 +546,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+P</string>
+   </property>
+  </action>
+  <action name="actionInsert_Target_path">
+   <property name="text">
+    <string>&amp;Insert Target path</string>
+   </property>
+   <property name="shortcut">
+    <string>F3</string>
    </property>
   </action>
  </widget>
