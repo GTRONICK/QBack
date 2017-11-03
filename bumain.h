@@ -73,6 +73,8 @@ private slots:
     void on_actionEnable_auto_rename_toggled(bool arg1);
 
 
+    void on_actionInsert_Target_path_triggered();
+
 private:
     void initThreadSetup();
     int  countAllFiles(QString path);
