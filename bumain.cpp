@@ -33,7 +33,6 @@ BUMain::BUMain(QWidget *parent) :
     giKeep = 0;
     giCopyFileIndex = 0;
     validatorFlag = 0;
-    giCountingControl = 0;
     giErrorOnCopyFlag = 0;
 
     gbBackcupButtonPressed = false;
@@ -115,7 +114,6 @@ void BUMain::initThreadSetup()
     connect(gobSearchDialog,SIGNAL(search_signal_resetCursor()),this,SLOT(main_slot_resetCursor()));
     connect(this,SIGNAL(main_signal_scanFolders(QString)),worker,SLOT(worker_slot_scanFolders(QString)));
     connect(worker,SIGNAL(worker_signal_setTotalFilesAndFolders(int,int,qint64)),this,SLOT(main_slot_setTotalFilesAndFolders(int,int,qint64)));
-    connect(worker,SIGNAL(worker_signal_workerDone()), this,SLOT(main_slot_workerDone()));
     connect(gobSearchDialog,SIGNAL(search_signal_getTextEditText()),this,SLOT(main_slot_getTextEdit()));
     connect(this,SIGNAL(main_signal_setTextEdit(QPlainTextEdit*)),gobSearchDialog,SLOT(search_slot_setTextEdit(QPlainTextEdit*)));
     connect(worker,SIGNAL(worker_signal_scanReady()),this,SLOT(main_slot_scanReady()));
@@ -125,8 +123,10 @@ void BUMain::initThreadSetup()
     connect(this->ui->fromFilesTextArea,SIGNAL(processDropEvent(QDropEvent*)),this,SLOT(main_slot_processDropEvent(QDropEvent*)));
     connect(this,SIGNAL(main_signal_renameEnable(bool)),worker,SLOT(worker_slot_renameEnable(bool)));
     connect(worker,SIGNAL(worker_signal_errorOnCopy()),this,SLOT(main_slot_errorOnCopy()));
+    connect(worker,SIGNAL(worker_signal_workerDone()), this,SLOT(main_slot_workerDone()));
     connect(thread,SIGNAL(finished()),worker,SLOT(deleteLater()));
     connect(thread,SIGNAL(finished()),thread,SLOT(deleteLater()));
+
     thread->start();
 }
 
@@ -329,7 +329,7 @@ void BUMain::main_slot_keepCopying()
         }
     }else{
         this->installEventFilters();
-        // qDebug() << "main: Scan finished, emmiting SIGNAL readyToStartCopy";
+        //qDebug() << "main: Scan finished, emmiting SIGNAL readyToStartCopy";
         emit(main_signal_readyToStartCopy());
         this->main_slot_setStatus("Ready.");
     }
@@ -351,7 +351,7 @@ void BUMain::main_slot_receiveDirAndFileList(QStringList *dirs, QStringList *fil
 {
     sourceFiles = files;
     targetDirectories = dirs;
-    // qDebug() << "main: Emmiting signal copyFile with " << sourceFiles->at(giCopyFileIndex) << ", " << targetDirectories->at(giCopyFileIndex);
+    //qDebug() << "main: Emmiting signal copyFile with " << sourceFiles->at(giCopyFileIndex) << ", " << targetDirectories->at(giCopyFileIndex);
     emit(main_signal_copyFile(sourceFiles->at(giCopyFileIndex),targetDirectories->at(giCopyFileIndex)));
 
 }
@@ -362,13 +362,13 @@ void BUMain::main_slot_receiveDirAndFileList(QStringList *dirs, QStringList *fil
 */
 void BUMain::main_slot_copyNextFile()
 {
-    // qDebug() << "main: copyNextFile SIGNAL received ";
+    //qDebug() << "main: copyNextFile SIGNAL received ";
     giCopyFileIndex ++;
     if(giKeep == 0 && giCopyFileIndex < sourceFiles->length()){
-        // qDebug() << "main: Emmiting SIGNAL copyFile with " << sourceFiles->at(giCopyFileIndex) << ", " << targetDirectories->at(giCopyFileIndex);
+        //qDebug() << "main: Emmiting SIGNAL copyFile with " << sourceFiles->at(giCopyFileIndex) << ", " << targetDirectories->at(giCopyFileIndex);
         emit(main_signal_copyFile(sourceFiles->at(giCopyFileIndex),targetDirectories->at(giCopyFileIndex)));
     }else{
-        // qDebug() << "Copy finished.";
+        //qDebug() << "Copy finished.";
         if(giErrorOnCopyFlag == 0) this->main_slot_showMessage("Copy Finished",QMessageBox::Information);
         else this->main_slot_showMessage("Copy Finished with errors! \nSee the log for details.",QMessageBox::Critical);
     }
@@ -379,21 +379,19 @@ void BUMain::main_slot_copyNextFile()
 */
 void BUMain::main_slot_resetCursor()
 {
-    // qDebug() << "main: resetCursor SIGNAL Recevied";
+    //qDebug() << "main: resetCursor SIGNAL Recevied";
     ui->fromFilesTextArea->moveCursor(QTextCursor::Start);
 }
 
 void BUMain::main_slot_setTotalFilesAndFolders(int aiFileCounter,int aiFolderCounter, qint64 aiTotalFilesSize)
 {
-    if(giCountingControl == 1){
-        giTmpTotalFolders = aiFolderCounter;
-        giTmpTotalFiles = aiFileCounter;
-        giTmpTotalFilesSize = aiTotalFilesSize;
+    giTmpTotalFolders = aiFolderCounter;
+    giTmpTotalFiles = aiFileCounter;
+    giTmpTotalFilesSize = aiTotalFilesSize;
 
-        ui->fileCountLabel->setText(aiFileCounter > 0 ? QString::number(aiFileCounter):QString::number(0));
-        ui->folderCountLabel->setText(aiFolderCounter > 0 ? QString::number(aiFolderCounter):QString::number(0));
-        ui->totalFileSizeValueLabel->setText(aiTotalFilesSize > 0 ? QString::number(aiTotalFilesSize):QString::number(0));
-    }
+    ui->fileCountLabel->setText(aiFileCounter > 0 ? QString::number(aiFileCounter):QString::number(0));
+    ui->folderCountLabel->setText(aiFolderCounter > 0 ? QString::number(aiFolderCounter):QString::number(0));
+    ui->totalFileSizeValueLabel->setText(aiTotalFilesSize > 0 ? QString::number(aiTotalFilesSize):QString::number(0));
 }
 
 /**
@@ -401,24 +399,23 @@ void BUMain::main_slot_setTotalFilesAndFolders(int aiFileCounter,int aiFolderCou
 */
 void BUMain::main_slot_workerDone()
 {
-    if(giCountingControl == 1){
 
-//    qDebug() << "main: SIGNAL workerDone received";
-        giPathIndex ++;
-        giTotalFiles += giTmpTotalFiles;
-        giTotalFilesSize += giTmpTotalFilesSize;
-        giTotalFolders += giTmpTotalFolders;
-        if(giPathIndex < gobPaths.length()){
-            emit(main_signal_scanFolders(gobPaths.at(giPathIndex)));
+    //qDebug() << "main: SIGNAL workerDone received";
+    giPathIndex ++;
+    giTotalFiles += giTmpTotalFiles;
+    giTotalFilesSize += giTmpTotalFilesSize;
+    giTotalFolders += giTmpTotalFolders;
+    if(giPathIndex < gobPaths.length()){
+        emit(main_signal_scanFolders(gobPaths.at(giPathIndex)));
 
-        }else{
-            this->installEventFilters();
-            ui->fileCountLabel->setText(giTotalFiles > 0 ? QString::number(giTotalFiles):QString::number(0));
-            ui->folderCountLabel->setText(giTotalFolders > 0 ? QString::number(giTotalFolders):QString::number(0));
-            ui->totalFileSizeValueLabel->setText(giTotalFilesSize > 0 ? QString::number(giTotalFilesSize):QString::number(0));
-            ui->overallCopyProgressBar->setMaximum(giTotalFiles > 0 ? giTotalFiles : 1);
-            checkBackupButton();
-        }
+    }else{
+        gobPaths.clear();
+        this->installEventFilters();
+        ui->fileCountLabel->setText(giTotalFiles > 0 ? QString::number(giTotalFiles):QString::number(0));
+        ui->folderCountLabel->setText(giTotalFolders > 0 ? QString::number(giTotalFolders):QString::number(0));
+        ui->totalFileSizeValueLabel->setText(giTotalFilesSize > 0 ? QString::number(giTotalFilesSize):QString::number(0));
+        ui->overallCopyProgressBar->setMaximum(giTotalFiles > 0 ? giTotalFiles : 1);
+        checkBackupButton();
     }
 }
 
@@ -444,18 +441,18 @@ void BUMain::on_openTargetButton_clicked()
 
 void BUMain::on_fromFilesTextArea_textChanged()
 {
+    disconnect(this,SIGNAL(main_signal_scanFolders(QString)),worker,SLOT(worker_slot_scanFolders(QString)));
+    gbCountCancel = true;
     resetCounters();
     QString lsCurrentPath = "";
     QString lsAreaText = ui->fromFilesTextArea->toPlainText();
 
     if(((lsAreaText.lastIndexOf(",") != giCurrentPos
             && lsAreaText.lastIndexOf(",") != -1)
-            || lsAreaText.lastIndexOf("#") != giCurrentNumPos)
-            && giCountingControl == 1){
+            || lsAreaText.lastIndexOf("#") != giCurrentNumPos)){
 
         ui->overallCopyProgressBar->setMaximum(0);
         gobPaths.clear();
-        gbCountCancel = false;
         giCurrentPos = lsAreaText.lastIndexOf(",");
         gobPaths = lsAreaText.split(",");
         gobPaths.removeAt(gobPaths.length() - 1);
@@ -469,6 +466,8 @@ void BUMain::on_fromFilesTextArea_textChanged()
         }
         giCurrentNumPos = lsAreaText.lastIndexOf("#");
         if(gobPaths.length() > 0) {
+            connect(this,SIGNAL(main_signal_scanFolders(QString)),worker,SLOT(worker_slot_scanFolders(QString)));
+            gbCountCancel = false;
             emit(main_signal_scanFolders(gobPaths.at(giPathIndex)));
         }else{
             resetState();
@@ -482,9 +481,9 @@ void BUMain::on_fromFilesTextArea_textChanged()
 
 void BUMain::main_slot_scanReady()
 {
-    // qDebug() << "main: scanReady SIGNAL received";
+    //qDebug() << "main: scanReady SIGNAL received";
     if(gbCountCancel == false ){
-        // qDebug() << "main: Emitting scanNextPath SIGNAL";
+        //qDebug() << "main: Emitting scanNextPath SIGNAL";
         emit(main_signal_scanNextPath());
     }
 }
@@ -492,13 +491,15 @@ void BUMain::main_slot_scanReady()
 void BUMain::main_slot_disableFileScan()
 {
     //qDebug() << "main: disableFileScan SIGNAL received";
-    giCountingControl = 0;
+    this->blockSignals(true);
+    worker->blockSignals(true);
 }
 
 void BUMain::main_slot_enableFileScan()
 {
     //qDebug() << "main: enableFileScan SIGNAL received";
-    giCountingControl = 1;
+    this->blockSignals(false);
+    worker->blockSignals(false);
     this->on_fromFilesTextArea_textChanged();
 }
 
@@ -532,12 +533,12 @@ void BUMain::on_logViewerButton_clicked()
 
 void BUMain::on_cancelButton_clicked()
 {
-    giKeep = 1;
+    this->giKeep = 1;
     ui->statusBar->showMessage("Cancelling...");
     emit(main_signal_setStopFlag(1));
-    gobPaths.clear();
-    giProgress = 0;
-    giCopyFileIndex = 0;
+    this->gobPaths.clear();
+    this->giProgress = 0;
+    this->giCopyFileIndex = 0;
 }
 
 void BUMain::resetCounters()
@@ -608,8 +609,8 @@ void BUMain::checkBackupButton()
 */
 void BUMain::resetState()
 {
-    giCurrentPos = -1;
-    gbCountCancel = true;
+    this->giCurrentPos = -1;
+    this->gbCountCancel = true;
     this->ui->overallCopyProgressBar->setMaximum(1);
     this->ui->fileCountLabel->setText("0");
     this->ui->folderCountLabel->setText("0");
@@ -657,13 +658,13 @@ void BUMain::on_actionAbout_triggered()
                             "<p><a href='https://github.com/GTRONICK/QBack/releases/tag/v1.9.0'>Help Manual for this version</a>"
                             "<p><a href='http://www.gtronick.com'>GTRONICK</a>");
 
-    QMessageBox::about(this, tr("About QBack 1.9.0"),
+    QMessageBox::about(this, tr("About QBack 1.9.1"),
     tr(helpText));
 }
 
 void BUMain::on_actionOpen_session_triggered()
 {
-    giCountingControl = 0;
+    this->main_slot_disableFileScan();
     targetFolder = QFileDialog::getOpenFileName(this, tr("Open Session"),
                                                     "",
                                                     tr("Text files (*.txt);;All files(*.*)"));
