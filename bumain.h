@@ -102,7 +102,6 @@ private:
     int giKeep;                     //Stop copy flag
     int giCurrentPos;               //Current carret position in the fromFilesTextArea for the ',' character
     int giCurrentNumPos;            //Current carret position in the fromFilesTextArea for the '#' character
-    int giCountingControl;          //File counting control flag
 
     int giTotalFiles;               //Total files counter
     int giTotalFolders;             //Total folder counter
