@@ -709,7 +709,6 @@ void BUMain::on_actionDefault_theme_triggered()
 
 void BUMain::main_slot_processDropEvent(QDropEvent *event)
 {
-    main_slot_disableFileScan();
     const QMimeData* mimeData = event->mimeData();
 
     if (mimeData->hasUrls()){
@@ -722,7 +721,6 @@ void BUMain::main_slot_processDropEvent(QDropEvent *event)
         }
     }
     event->acceptProposedAction();
-    main_slot_enableFileScan();
 }
 
 void BUMain::main_slot_errorOnCopy()
