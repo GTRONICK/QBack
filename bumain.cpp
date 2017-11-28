@@ -17,7 +17,7 @@ BUMain::BUMain(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::BUMain)
 {
-
+    //qDebug() << "Begin BUMain";
     ui->setupUi(this);
 
     dialog = new QFileDialog(this);
@@ -37,6 +37,7 @@ BUMain::BUMain(QWidget *parent) :
 
     gbBackcupButtonPressed = false;
     gbCountCancel = false;
+    gbScanDisabled = false;
 
     QFile styleFile("style.qss");
     if(styleFile.exists()){
@@ -52,10 +53,19 @@ BUMain::BUMain(QWidget *parent) :
     this->ui->openTargetButton->setEnabled(false);
     this->initThreadSetup();
     this->loadSessionFile("Session.txt");
+    //qDebug() << "End BUMain";
 }
 
+/**
+ * @brief BUMain::eventFilter
+ * Event filter validator. Used whe the user move the mouse over a button.
+ * @param obj Button to be filtered.
+ * @param event Mouse Enter event.
+ * @return True: The mouse entered and is over the object. False otherwise.
+ */
 bool BUMain::eventFilter(QObject *obj, QEvent *event)
 {
+    //qDebug() << "Begin eventFilter";
     if (obj == (QObject*)ui->originButton) {
         if (event->type() == QEvent::Enter){
             ui->statusBar->showMessage("Select the files to copy",TOOLTIP_DURATION);
@@ -81,21 +91,26 @@ bool BUMain::eventFilter(QObject *obj, QEvent *event)
             ui->statusBar->showMessage("Cancel copy",TOOLTIP_DURATION);
         }
     }
+    //qDebug() << "End eventFilter";
     return QWidget::eventFilter(obj, event);
 }
 
 BUMain::~BUMain()
 {
+    //qDebug() << "Begin ~BUMain";
     delete ui;
     thread->quit();
     thread->wait();
+    //qDebug() << "End ~BUMain";
 }
 
 /**
-  Threads and connections setup.
-*/
+ * @brief BUMain::initThreadSetup
+ * Threads and connections setup.
+ */
 void BUMain::initThreadSetup()
 {
+    //qDebug() << "Begin initThreadSetup";
     thread = new QThread;
     worker = new Worker;
     worker->moveToThread(thread);
@@ -128,33 +143,40 @@ void BUMain::initThreadSetup()
     connect(thread,SIGNAL(finished()),thread,SLOT(deleteLater()));
 
     thread->start();
+    //qDebug() << "End initThreadSetup";
 }
 
 /**
-  Event filters installer. Allow showing the button help in the
-  status bar.
-*/
+ * @brief BUMain::installEventFilters
+ * Event filters installer. Allow showing the button help in the
+ * status bar.
+ */
 void BUMain::installEventFilters()
 {
+    //qDebug() << "Begin installEventFilters";
     ui->originButton->installEventFilter(this);
     ui->targetButton->installEventFilter(this);
     ui->logViewerButton->installEventFilter(this);
     ui->openTargetButton->installEventFilter(this);
     ui->backupButton->installEventFilter(this);
     ui->fromFilesTextArea->installEventFilter(this);
+    //qDebug() << "End installEventFilters";
 }
 
 /**
-  Event filter uninstaller. Disable the button help, in the status bar.
-*/
+ * @brief BUMain::uninstallEventFilters
+ * Event filter uninstaller. Disable the button help, in the status bar.
+ */
 void BUMain::uninstallEventFilters()
 {
+    //qDebug() << "Begin uninstallEventFilters";
     ui->originButton->removeEventFilter(this);
     ui->targetButton->removeEventFilter(this);
     ui->logViewerButton->removeEventFilter(this);
     ui->openTargetButton->removeEventFilter(this);
     ui->backupButton->removeEventFilter(this);
     ui->fromFilesTextArea->removeEventFilter(this);
+    //qDebug() << "End uninstallEventFilters";
 }
 
 /**
@@ -162,23 +184,30 @@ void BUMain::uninstallEventFilters()
   @param filePath File path to be saved
   @return true if the save was successful, false otherwise.
 */
-bool BUMain::saveSessionToFile(QString filePath)
+bool BUMain::saveSessionToFile(QString asFilePath)
 {
-    QFile file(filePath);
-    if (!file.open(QIODevice::WriteOnly))
-           return false;
+    //qDebug() << "Begin saveSessionToFile: " << asFilePath;
+    QFile file(asFilePath);
+    if (!file.open(QIODevice::WriteOnly)){
+        //qDebug() << "End saveSessionToFile: " << "false";
+        return false;
+    }
 
     QTextStream out(&file);
     out << ui->fromFilesTextArea->toPlainText() + "\n--" + ui->toFilesTextField->text();
     file.close();
+
+    //qDebug() << "End saveSessionToFile: " << "true";
     return true;
 }
 
 /**
-  Action triggered when the backup or cancel button is clicked.
-*/
+ * @brief BUMain::on_backupButton_clicked
+ * Action triggered when the backup or cancel button is clicked.
+ */
 void BUMain::on_backupButton_clicked()
 {
+    //qDebug() << "Begin on_backupButton_clicked";
     giErrorOnCopyFlag = 0;
     QString lsCurrentPath = "";
     if(gbBackcupButtonPressed == false){
@@ -243,13 +272,17 @@ void BUMain::on_backupButton_clicked()
         emit(main_signal_logInfo("\n ----- Copy Cancelled ----- \n"));
         on_cancelButton_clicked();
     }
+
+    //qDebug() << "End on_backupButton_clicked";
 }
 
 /**
-  Action triggered when the origin button is clicked.
-*/
+ * @brief BUMain::on_originButton_clicked
+ * Action triggered when the origin button is clicked.
+ */
 void BUMain::on_originButton_clicked()
 {
+    //qDebug() << "Begin on_originButton_clicked";
     targetFolder.clear();
     giTmpTotalFolders = 0;
 
@@ -268,13 +301,16 @@ void BUMain::on_originButton_clicked()
         ui->fromFilesTextArea->appendPlainText(dir.absolutePath() + ",");
         if(validatorFlag == 1) ui->backupButton->setEnabled(true);
     }
+    //qDebug() << "End on_originButton_clicked";
 }
 
 /**
-  Action triggered when the target button is clicked.
-*/
+ * @brief BUMain::on_targetButton_clicked
+ * Action triggered when the target button is clicked.
+ */
 void BUMain::on_targetButton_clicked()
 {
+    //qDebug() << "Begin on_targetButton_clicked";
     dialog->setFileMode(QFileDialog::Directory);
     dialog->setOption(QFileDialog::ShowDirsOnly,true);
     if(dialog->exec()){
@@ -286,13 +322,16 @@ void BUMain::on_targetButton_clicked()
     }
 
     ui->toFilesTextField->setText(targetFolder);
+    //qDebug() << "End on_targetButton_clicked";
 }
 
 /**
-  Action triggered when the text in the target line, is modified.
-*/
+ * @brief BUMain::on_toFilesTextField_textChanged
+ * Action triggered when the text in the target line, is modified.
+ */
 void BUMain::on_toFilesTextField_textChanged()
 {
+    //qDebug() << "Begin on_toFilesTextField_textChanged";
     validatorFlag = 0;
     if(!ui->toFilesTextField->text().isEmpty() && !ui->toFilesTextField->text().startsWith(" "))
     {
@@ -307,14 +346,17 @@ void BUMain::on_toFilesTextField_textChanged()
         ui->backupButton->setEnabled(false);
         ui->openTargetButton->setEnabled(false);
     }
+    //qDebug() << "End on_toFilesTextField_textChanged";
 }
 
 /**
-  Slot triggered when the worker request for a new copy of a single file. This slot
-  is called only one time.
-*/
+ * @brief BUMain::main_slot_keepCopying
+ * Slot triggered when the worker request for a new copy of a single file. This slot
+ * is called only one time.
+ */
 void BUMain::main_slot_keepCopying()
 {
+    //qDebug() << "Begin main_slot_keepCopying";
     giProgress ++;
 
     if(giProgress < gobPaths.length() && giKeep == 0){
@@ -333,58 +375,73 @@ void BUMain::main_slot_keepCopying()
         emit(main_signal_readyToStartCopy());
         this->main_slot_setStatus("Ready.");
     }
+    //qDebug() << "End main_slot_keepCopying";
 }
 
 /**
   Slot triggered when any class need to show a message in the status bar.
   @param Message to be shown.
 */
-void BUMain::main_slot_setStatus(QString status)
+void BUMain::main_slot_setStatus(QString asStatus)
 {
-    ui->statusBar->showMessage(status);
+    //qDebug() << "Begin main_slot_setStatus: " << asStatus;
+    ui->statusBar->showMessage(asStatus);
+    //qDebug() << "End main_slot_setStatus";
 }
 
 /**
-  Slot triggered whe the worker sends the files to be copied and their destination folders.
-*/
+ * @brief BUMain::main_slot_receiveDirAndFileList
+ * Slot triggered whe the worker sends the files to be copied and their destination folders.
+ * @param dirs Target directories.
+ * @param files Source files to be copied.
+ */
 void BUMain::main_slot_receiveDirAndFileList(QStringList *dirs, QStringList *files)
 {
+    //qDebug() << "Begin main_slot_receiveDirAndFileList";
     sourceFiles = files;
     targetDirectories = dirs;
-    //qDebug() << "main: Emmiting signal copyFile with " << sourceFiles->at(giCopyFileIndex) << ", " << targetDirectories->at(giCopyFileIndex);
     emit(main_signal_copyFile(sourceFiles->at(giCopyFileIndex),targetDirectories->at(giCopyFileIndex)));
-
+    //qDebug() << "End main_slot_receiveDirAndFileList";
 }
 
 /**
-  Slot triggered when the worker request for a new single file copy. This slot
-  is called for every file to be copied.
-*/
+ * @brief BUMain::main_slot_copyNextFile
+ * Slot triggered when the worker request for a new single file copy. This slot
+ * is called for every file to be copied.
+ */
 void BUMain::main_slot_copyNextFile()
 {
-    //qDebug() << "main: copyNextFile SIGNAL received ";
+    //qDebug() << "Begin main_slot_copyNextFile";
     giCopyFileIndex ++;
     if(giKeep == 0 && giCopyFileIndex < sourceFiles->length()){
-        //qDebug() << "main: Emmiting SIGNAL copyFile with " << sourceFiles->at(giCopyFileIndex) << ", " << targetDirectories->at(giCopyFileIndex);
         emit(main_signal_copyFile(sourceFiles->at(giCopyFileIndex),targetDirectories->at(giCopyFileIndex)));
     }else{
-        //qDebug() << "Copy finished.";
         if(giErrorOnCopyFlag == 0) this->main_slot_showMessage("Copy Finished",QMessageBox::Information);
         else this->main_slot_showMessage("Copy Finished with errors! \nSee the log for details.",QMessageBox::Critical);
     }
+    //qDebug() << "End main_slot_copyNextFile";
 }
 
 /**
-  Slot triggered when the text cursor of the sources text area needs to be reseted.
-*/
+ * @brief BUMain::main_slot_resetCursor
+ * Slot triggered when the text cursor of the sources text area needs to be reseted.
+ */
 void BUMain::main_slot_resetCursor()
 {
-    //qDebug() << "main: resetCursor SIGNAL Recevied";
+    //qDebug() << "Begin main_slot_resetCursor";
     ui->fromFilesTextArea->moveCursor(QTextCursor::Start);
+    //qDebug() << "End main_slot_resetCursor";
 }
 
+/**
+ * @brief BUMain::main_slot_setTotalFilesAndFolders Adjust the total number of files, folders and size
+ * @param aiFileCounter Total number of files.
+ * @param aiFolderCounter Total number of folders.
+ * @param aiTotalFilesSize Total file size computed.
+ */
 void BUMain::main_slot_setTotalFilesAndFolders(int aiFileCounter,int aiFolderCounter, qint64 aiTotalFilesSize)
 {
+    //qDebug() << "Begin main_slot_setTotalFilesAndFolders";
     giTmpTotalFolders = aiFolderCounter;
     giTmpTotalFiles = aiFileCounter;
     giTmpTotalFilesSize = aiTotalFilesSize;
@@ -392,15 +449,16 @@ void BUMain::main_slot_setTotalFilesAndFolders(int aiFileCounter,int aiFolderCou
     ui->fileCountLabel->setText(aiFileCounter > 0 ? QString::number(aiFileCounter):QString::number(0));
     ui->folderCountLabel->setText(aiFolderCounter > 0 ? QString::number(aiFolderCounter):QString::number(0));
     ui->totalFileSizeValueLabel->setText(aiTotalFilesSize > 0 ? QString::number(aiTotalFilesSize):QString::number(0));
+    //qDebug() << "End main_slot_setTotalFilesAndFolders";
 }
 
 /**
-  Slot triggered wheb the counting of files and folders ends.
-*/
+ * @brief BUMain::main_slot_workerDone
+ * Slot triggered wheb the counting of files and folders ends.
+ */
 void BUMain::main_slot_workerDone()
 {
-
-    //qDebug() << "main: SIGNAL workerDone received";
+    //qDebug() << "Begin main_slot_workerDone";
     giPathIndex ++;
     giTotalFiles += giTmpTotalFiles;
     giTotalFilesSize += giTmpTotalFilesSize;
@@ -417,15 +475,27 @@ void BUMain::main_slot_workerDone()
         ui->overallCopyProgressBar->setMaximum(giTotalFiles > 0 ? giTotalFiles : 1);
         checkBackupButton();
     }
+    //qDebug() << "End main_slot_workerDone";
 }
 
+/**
+ * @brief BUMain::main_slot_getTextEdit
+ * Slot to send the text to the worker
+ */
 void BUMain::main_slot_getTextEdit()
 {
-    emit(main_signal_setTextEdit(this->ui->fromFilesTextArea));
+    //qDebug() << "Begin main_slot_getTextEdit";
+    emit main_signal_setTextEdit(this->ui->fromFilesTextArea);
+    //qDebug() << "End main_slot_getTextEdit";
 }
 
+/**
+ * @brief BUMain::on_openTargetButton_clicked
+ * Slot triggered when a click on the Target Button, is detected.
+ */
 void BUMain::on_openTargetButton_clicked()
 {
+    //qDebug() << "Begin on_openTargetButton_clicked";
     ui->toFilesTextField->setText(ui->toFilesTextField->text().trimmed());
 
     if(ui->toFilesTextField->text() != NULL &&
@@ -437,74 +507,112 @@ void BUMain::on_openTargetButton_clicked()
             this->main_slot_showMessage("Target folder \"" + ui->toFilesTextField->text() + "\" not found!",QMessageBox::Critical);
         }
     }
+    //qDebug() << "End on_openTargetButton_clicked";
 }
 
+/**
+ * @brief BUMain::on_fromFilesTextArea_textChanged
+ * Slot triggered when the text in the source files text area, is altered.
+ */
 void BUMain::on_fromFilesTextArea_textChanged()
 {
-    disconnect(this,SIGNAL(main_signal_scanFolders(QString)),worker,SLOT(worker_slot_scanFolders(QString)));
-    gbCountCancel = true;
-    resetCounters();
-    QString lsCurrentPath = "";
-    QString lsAreaText = ui->fromFilesTextArea->toPlainText();
+    //qDebug() << "Begin on_fromFilesTextArea_textChanged";
+    if(gbScanDisabled == false){
+        disconnect(this,SIGNAL(main_signal_scanFolders(QString)),worker,SLOT(worker_slot_scanFolders(QString)));
+        gbCountCancel = true;
+        resetCounters();
+        QString lsCurrentPath = "";
+        QString lsAreaText = ui->fromFilesTextArea->toPlainText();
 
-    if(((lsAreaText.lastIndexOf(",") != giCurrentPos
-            && lsAreaText.lastIndexOf(",") != -1)
-            || lsAreaText.lastIndexOf("#") != giCurrentNumPos)){
+        if(((lsAreaText.lastIndexOf(",") != giCurrentPos
+                && lsAreaText.lastIndexOf(",") != -1)
+                || lsAreaText.lastIndexOf("#") != giCurrentNumPos)){
 
-        ui->overallCopyProgressBar->setMaximum(0);
-        gobPaths.clear();
-        giCurrentPos = lsAreaText.lastIndexOf(",");
-        gobPaths = lsAreaText.split(",");
-        gobPaths.removeAt(gobPaths.length() - 1);
-        this->uninstallEventFilters();
-        for(int i = 0; i < gobPaths.length(); i++){
-            lsCurrentPath = gobPaths.at(i);
-            if(lsCurrentPath.startsWith("#") || lsCurrentPath.startsWith("\n#")){
-                gobPaths.removeAt(i);
-                i--;
+            ui->overallCopyProgressBar->setMaximum(0);
+            gobPaths.clear();
+            giCurrentPos = lsAreaText.lastIndexOf(",");
+            gobPaths = lsAreaText.split(",");
+            gobPaths.removeAt(gobPaths.length() - 1);
+            this->uninstallEventFilters();
+
+            for(int i = 0; i < gobPaths.length(); i++){
+                lsCurrentPath = gobPaths.at(i);
+                if(lsCurrentPath.startsWith("#") || lsCurrentPath.startsWith("\n#")){
+                    gobPaths.removeAt(i);
+                    i--;
+                }
             }
-        }
-        giCurrentNumPos = lsAreaText.lastIndexOf("#");
-        if(gobPaths.length() > 0) {
-            connect(this,SIGNAL(main_signal_scanFolders(QString)),worker,SLOT(worker_slot_scanFolders(QString)));
-            gbCountCancel = false;
-            emit(main_signal_scanFolders(gobPaths.at(giPathIndex)));
-        }else{
+
+            giCurrentNumPos = lsAreaText.lastIndexOf("#");
+
+            if(gobPaths.length() > 0) {
+                qDebug() << "gobPaths.length()" << QString::number(gobPaths.length());
+                connect(this,SIGNAL(main_signal_scanFolders(QString)),worker,SLOT(worker_slot_scanFolders(QString)));
+                gbCountCancel = false;
+                worker->blockSignals(false);
+                this->blockSignals(false);
+                emit main_signal_scanFolders(gobPaths.at(giPathIndex));
+            }else{
+                resetState();
+            }
+
+        }else if(lsAreaText.lastIndexOf(",") == -1){
+
             resetState();
         }
-
-    }else if(lsAreaText.lastIndexOf(",") == -1){
-
-        resetState();
     }
+    //qDebug() << "End on_fromFilesTextArea_textChanged";
 }
 
+/**
+ * @brief BUMain::main_slot_scanReady
+ */
 void BUMain::main_slot_scanReady()
 {
-    //qDebug() << "main: scanReady SIGNAL received";
+    //qDebug() << "Begin main_slot_scanReady";
     if(gbCountCancel == false ){
-        //qDebug() << "main: Emitting scanNextPath SIGNAL";
-        emit(main_signal_scanNextPath());
+        emit main_signal_scanNextPath();
     }
+    //qDebug() << "End main_slot_scanReady";
 }
 
+/**
+ * @brief BUMain::main_slot_disableFileScan
+ * Slot used to disable the file counting while the sources text area is modified, or when files
+ * are dropped.
+ */
 void BUMain::main_slot_disableFileScan()
 {
-    //qDebug() << "main: disableFileScan SIGNAL received";
+    //qDebug() << "Begin main_slot_disableFileScan";
+    gbScanDisabled = true;
     this->blockSignals(true);
     worker->blockSignals(true);
+    //qDebug() << "End main_slot_disableFileScan";
 }
 
+/**
+ * @brief BUMain::main_slot_enableFileScan
+ * Slot used to diable the file counting, after modify the sources text area, or drop files.
+ */
 void BUMain::main_slot_enableFileScan()
 {
-    //qDebug() << "main: enableFileScan SIGNAL received";
+    //qDebug() << "Begin main_slot_enableFileScan";
+    gbScanDisabled = false;
     this->blockSignals(false);
     worker->blockSignals(false);
     this->on_fromFilesTextArea_textChanged();
+    //qDebug() << "End main_slot_enableFileScan";
 }
 
+/**
+ * @brief BUMain::main_slot_showMessage
+ * Slot used to show messages in the screen.
+ * @param message
+ * @param messageType
+ */
 void BUMain::main_slot_showMessage(QString message, int messageType)
 {
+    //qDebug() << "Begin main_slot_showMessage";
     giCopyFileIndex = 0;
     this->ui->backupButton->setText("&Backup!");
     this->ui->backupButton->setIcon(QIcon(":/icons/backupButton.png"));
@@ -524,25 +632,43 @@ void BUMain::main_slot_showMessage(QString message, int messageType)
         QMessageBox::critical(this,"Warning","An error has occurred",QMessageBox::Ok,QMessageBox::Ok);
         break;
     }
+    //qDebug() << "End main_slot_showMessage";
 }
 
+/**
+ * @brief BUMain::on_logViewerButton_clicked
+ * Slot triggered when the user clicks the Log viewer button.
+ */
 void BUMain::on_logViewerButton_clicked()
 {
+    //qDebug() << "Begin on_logViewerButton_clicked";
     gobLogViewer->setVisible(true);
+    //qDebug() << "End on_logViewerButton_clicked";
 }
 
+/**
+ * @brief BUMain::on_cancelButton_clicked
+ * Slot triggered when the user clicks the Cancel button.
+ */
 void BUMain::on_cancelButton_clicked()
 {
+    //qDebug() << "Begin on_cancelButton_clicked";
     this->giKeep = 1;
     ui->statusBar->showMessage("Cancelling...");
     emit(main_signal_setStopFlag(1));
     this->gobPaths.clear();
     this->giProgress = 0;
     this->giCopyFileIndex = 0;
+    //qDebug() << "End on_cancelButton_clicked";
 }
 
+/**
+ * @brief BUMain::resetCounters
+ * Function used to reset the global counters, used in file counting, and copying.
+ */
 void BUMain::resetCounters()
 {
+    //qDebug() << "Begin resetCounters";
     this->giTmpTotalFolders = 0;
     this->giTmpTotalFiles = 0;
     this->giTmpTotalFilesSize = 0;
@@ -550,18 +676,33 @@ void BUMain::resetCounters()
     this->giTotalFiles = 0;
     this->giTotalFolders = 0;
     this->giTotalFilesSize = 0;
+    //qDebug() << "End resetCounters";
 }
 
+/**
+ * @brief BUMain::closeEvent
+ * Function invoked when the user closes the main window.
+ * @param event Close event.
+ */
 void BUMain::closeEvent(QCloseEvent *event)
 {
+    //qDebug() << "Begin closeEvent";
     if(this->saveSessionToFile("Session.txt"))
         event->accept();
     else
         event->ignore();
+    //qDebug() << "End closeEvent";
 }
 
+/**
+ * @brief BUMain::loadSessionFile
+ *
+ * @param asFilePath
+ */
 void BUMain::loadSessionFile(QString asFilePath)
 {
+    //qDebug() << "Begin loadSessionFile: " << asFilePath;
+    this->main_slot_disableFileScan();
     QFile file(asFilePath);
     if(file.exists()){
         ui->fromFilesTextArea->clear();
@@ -582,16 +723,19 @@ void BUMain::loadSessionFile(QString asFilePath)
 
     this->main_slot_resetCursor();
     this->main_slot_enableFileScan();
+    //qDebug() << "End loadSessionFile";
 }
 
 /**
-  Method to validate the source files number, and target.
-  Only when the source files number is greater than 0, and
-  there is a string in the target line, the backup button
-  will be enabled.
-*/
+ * @brief BUMain::checkBackupButton
+ * Method to validate the source files number, and target.
+ * Only when the source files number is greater than 0, and
+ * there is a string in the target line, the backup button
+ * will be enabled.
+ */
 void BUMain::checkBackupButton()
 {
+    //qDebug() << "Begin checkBackupButton";
     if(ui->toFilesTextField->text() != ""
             && !ui->toFilesTextField->text().startsWith(" ")
             && giTotalFiles > 0)
@@ -602,13 +746,16 @@ void BUMain::checkBackupButton()
     }else{
        ui->backupButton->setEnabled(false);
     }
+    //qDebug() << "End checkBackupButton";
 }
 
 /**
-  Method to reset the counters and application state.
-*/
+ * @brief BUMain::resetState
+ * Function used to reset the counters and application state, in the graphical window.
+ */
 void BUMain::resetState()
 {
+    //qDebug() << "Begin resetState";
     this->giCurrentPos = -1;
     this->gbCountCancel = true;
     this->ui->overallCopyProgressBar->setMaximum(1);
@@ -618,6 +765,7 @@ void BUMain::resetState()
     this->installEventFilters();
     this->main_slot_setStatus("Ready.");
     this->ui->backupButton->setEnabled(false);
+    //qDebug() << "End resetState";
 }
 
 /**
@@ -626,25 +774,40 @@ void BUMain::resetState()
   @param String to crop.
   @return String without trailing slashes.
 */
-QString BUMain::removeTrailingSlashes(QString str)
+QString BUMain::removeTrailingSlashes(QString lsString)
 {
-    int n = str.size() - 1;
+    //qDebug() << "Begin removeTrailingSlashes: " << lsString;
+    int n = lsString.size() - 1;
     for (; n >= 0; --n) {
-      if (str.at(n) != "/" && str.at(n) != "\\") {
-        return str.left(n + 1);
-      }
+        if (lsString.at(n) != "/" && lsString.at(n) != "\\") {
+            //qDebug() << "End removeTrailingSlashes: " << lsString.left(n + 1);
+            return lsString.left(n + 1);
+        }
     }
+    //qDebug() << "End removeTrailingSlashes: "
     return "";
 }
 
+/**
+ * @brief BUMain::on_actionQuit_triggered
+ * Slot invoked when the user closes the application, via File -> Quit.
+ */
 void BUMain::on_actionQuit_triggered()
 {
+    //qDebug() << "Begin on_actionQuit_triggered"
     this->saveSessionToFile("Session.txt");
     QApplication::quit();
+    //qDebug() << "End on_actionQuit_triggered"
 }
 
+/**
+ * @brief BUMain::on_actionAbout_triggered
+ * Slot triggered when the user clicks on About QBack. Shows basic application information,
+ * and provides a link to go to the release page.
+ */
 void BUMain::on_actionAbout_triggered()
 {
+    //qDebug() << "Begin on_actionAbout_triggered"
     const char *helpText = ("<h2>QBack</h2>"
                             "<style>"
                             "a:link {"
@@ -660,10 +823,18 @@ void BUMain::on_actionAbout_triggered()
 
     QMessageBox::about(this, tr("About QBack 1.8.1"),
     tr(helpText));
+    //qDebug() << "End on_actionAbout_triggered"
 }
 
+/**
+ * @brief BUMain::on_actionOpen_session_triggered
+ * Slot used to load an especific session. This will load the files, and target
+ * where the files will be copied. The file counter, folder counter, and
+ * total file size will update accordingly.
+ */
 void BUMain::on_actionOpen_session_triggered()
 {
+    //qDebug() << "Begin on_actionOpen_session_triggered"
     this->main_slot_disableFileScan();
     targetFolder = QFileDialog::getOpenFileName(this, tr("Open Session"),
                                                     "",
@@ -672,10 +843,17 @@ void BUMain::on_actionOpen_session_triggered()
     if(targetFolder != NULL && targetFolder != ""){
         loadSessionFile(targetFolder);
     }
+    //qDebug() << "End on_actionOpen_session_triggered"
 }
 
+/**
+ * @brief BUMain::on_actionLoad_theme_triggered
+ * Slot used to load an especific theme for the application.
+ * The file could be any text file with a valid Style sheet.
+ */
 void BUMain::on_actionLoad_theme_triggered()
 {
+    //qDebug() << "Begin on_actionLoad_theme_triggered"
     targetFolder = QFileDialog::getOpenFileName(this, tr("Open Style"),
                                                     "",
                                                     tr("Stylesheets (*.qss);;All files(*.*)"));
@@ -686,29 +864,56 @@ void BUMain::on_actionLoad_theme_triggered()
         QString StyleSheet = QLatin1String(styleFile.readAll());
         this->setStyleSheet(StyleSheet);
     }
+    //qDebug() << "End on_actionLoad_theme_triggered"
 }
 
+/**
+ * @brief BUMain::on_actionSave_session_triggered
+ * Slot used to save the current session, to a text file.
+ * This will save the source files, and the target folder.
+ */
 void BUMain::on_actionSave_session_triggered()
 {
+    //qDebug() << "Begin on_actionSave_session_triggered"
     targetFolder = QFileDialog::getSaveFileName(this, tr("Save session"), "", tr("Text files (*.txt);;All files(*.*)"));
 
     if(targetFolder != NULL && targetFolder != ""){
         saveSessionToFile(targetFolder);
     }
+    //qDebug() << "End on_actionSave_session_triggered"
 }
 
+/**
+ * @brief BUMain::on_actionFind_in_sources_triggered
+ * Slot used to show the Search & Replace dialog.
+ */
 void BUMain::on_actionFind_in_sources_triggered()
 {
+    //qDebug() << "Begin on_actionFind_in_sources_triggered"
     gobSearchDialog->setVisible(true);
+    //qDebug() << "End on_actionFind_in_sources_triggered"
 }
 
+/**
+ * @brief BUMain::on_actionDefault_theme_triggered
+ * Slot used to reset the theme application.
+ */
 void BUMain::on_actionDefault_theme_triggered()
 {
+    //qDebug() << "Begin on_actionDefault_theme_triggered"
     this->setStyleSheet("");
+    //qDebug() << "End on_actionDefault_theme_triggered"
 }
 
+/**
+ * @brief BUMain::main_slot_processDropEvent
+ * Slot called when files are dropped in the sources text area.
+ * @param event Drop event.
+ */
 void BUMain::main_slot_processDropEvent(QDropEvent *event)
 {
+    //qDebug() << "Begin main_slot_processDropEvent"
+    main_slot_disableFileScan();
     const QMimeData* mimeData = event->mimeData();
 
     if (mimeData->hasUrls()){
@@ -721,20 +926,43 @@ void BUMain::main_slot_processDropEvent(QDropEvent *event)
         }
     }
     event->acceptProposedAction();
+    main_slot_enableFileScan();
+    //qDebug() << "Begin main_slot_processDropEvent"
 }
 
+/**
+ * @brief BUMain::main_slot_errorOnCopy
+ * Slot used to indicate a copy failure, using a flag.
+ */
 void BUMain::main_slot_errorOnCopy()
 {
+    //qDebug() << "Begin main_slot_errorOnCopy"
     giErrorOnCopyFlag = 1;
+    //qDebug() << "End main_slot_errorOnCopy"
 }
 
+/**
+ * @brief BUMain::on_actionEnable_auto_rename_toggled
+ * Slot used to tell to the worker, that the Automatic Rename, has been enabled.
+ * @param arg1 True: Rename enabled. False otherwise.
+ */
 void BUMain::on_actionEnable_auto_rename_toggled(bool arg1)
 {
+    //qDebug() << "Begin on_actionEnable_auto_rename_toggled: " << arg1
     emit main_signal_renameEnable(arg1);
+    //qDebug() << "End on_actionEnable_auto_rename_toggled: " << arg1
 }
 
+/**
+ * @brief BUMain::on_actionInsert_Target_path_triggered
+ * Slot used to insert the target path, at the current cursor position.
+ * This will append a > and a / to the path, letting it ready for
+ * modification.
+ */
 void BUMain::on_actionInsert_Target_path_triggered()
 {
+    //qDebug() << "Begin on_actionInsert_Target_path_triggered"
     QTextCursor lobCursor = ui->fromFilesTextArea->textCursor();
     lobCursor.insertText(">" + ui->toFilesTextField->text() + "/");
+    //qDebug() << "End on_actionInsert_Target_path_triggered"
 }
