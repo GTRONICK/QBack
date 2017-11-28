@@ -119,7 +119,7 @@ void Worker::worker_slot_copyFile(QString srcFilePath, QString tgtFilePath)
 
 void Worker::worker_slot_scanFolders(QString aobFolderPath)
 {
-    // qDebug() << "Worker: scanFolders SIGNAL received";
+    qDebug() << "Begin worker_slot_scanFolders " << "aobFolderPath: " << aobFolderPath;
     emit worker_signal_statusInfo("Counting files, please wait...");
     giFoldersCounter = 0;
     giFileCounter = 0;
@@ -134,11 +134,12 @@ void Worker::worker_slot_scanFolders(QString aobFolderPath)
     else {
         countAllFiles(aobFolderPath.trimmed());
     }
+    qDebug() << "End worker_slot_scanFolders";
 }
 
 void Worker::countAllFiles(QString path)
 {
-
+    gobIterator = NULL;
     QFileInfo lobFileInfo(path);
     if(lobFileInfo.isDir()){
         gobIterator = new QDirIterator(path,QDir::AllEntries | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System | QDir::NoSymLinks,QDirIterator::Subdirectories);
@@ -152,7 +153,7 @@ void Worker::countAllFiles(QString path)
             }
 
             if(giFileCounter % 50 == 0) emit(worker_signal_setTotalFilesAndFolders(giFileCounter,giFoldersCounter,giTotalFilesSize / 1000000));
-            // qDebug() << "worker: Emitting scanReady SIGNAL";
+            qDebug() << "worker: Emitting scanReady SIGNAL";
             emit worker_signal_scanReady();
         }else{
             emitCountersSignals();
@@ -170,7 +171,7 @@ void Worker::countAllFiles(QString path)
 void Worker::worker_slot_scanNextPath()
 {
     // qDebug() << "worker: scanNextPath SIGNAL received";
-    if(gobIterator->hasNext()){
+    if(gobIterator!=NULL && gobIterator->hasNext()){
         QFileInfo source(gobIterator->next());
         if(source.isFile()){
             giFileCounter ++;
@@ -266,6 +267,8 @@ bool Worker::createDirectory(QString path)
 
 void Worker::emitCountersSignals()
 {
+    //qDebug() << "Begin emitCountersSignals";
     emit(worker_signal_statusInfo("Ready."));
     emit(worker_signal_setTotalFilesAndFolders(giFileCounter,giFoldersCounter,giTotalFilesSize / 1000000));
+    //qDebug() << "End emitCountersSignals";
 }
