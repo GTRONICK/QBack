@@ -43,10 +43,8 @@ private slots:
     void on_targetButton_clicked();
     void on_openTargetButton_clicked();
     void on_logViewerButton_clicked();
-
     void on_fromFilesTextArea_textChanged();
     void on_toFilesTextField_textChanged();
-
     void on_actionQuit_triggered();
     void on_actionAbout_triggered();
     void on_actionDefault_theme_triggered();
@@ -54,10 +52,9 @@ private slots:
     void on_actionLoad_theme_triggered();
     void on_actionSave_session_triggered();
     void on_actionFind_in_sources_triggered();
-
     void main_slot_showMessage(QString message, int messageType);
     void main_slot_keepCopying();
-    void main_slot_setStatus(QString status);
+    void main_slot_setStatus(QString asStatus);
     void main_slot_receiveDirAndFileList(QStringList *dirs, QStringList *files);
     void main_slot_copyNextFile();
     void main_slot_resetCursor();
@@ -69,10 +66,7 @@ private slots:
     void main_slot_enableFileScan();
     void main_slot_processDropEvent(QDropEvent *event);
     void main_slot_errorOnCopy();
-
     void on_actionEnable_auto_rename_toggled(bool arg1);
-
-
     void on_actionInsert_Target_path_triggered();
 
 private:
@@ -80,24 +74,24 @@ private:
     int  countAllFiles(QString path);
     void installEventFilters();
     void uninstallEventFilters();
-    bool saveSessionToFile(QString filePath);
+    bool saveSessionToFile(QString asFilePath);
     void loadSessionFile(QString asFilePath);
     void on_cancelButton_clicked();
     void resetCounters();
     void checkBackupButton();
     void resetState();
-    QString removeTrailingSlashes(QString str);
+    QString removeTrailingSlashes(QString lsString);
 
     Ui::BUMain *ui;
-    QThread *thread;
-    Worker *worker;
-    QFileDialog *dialog;
-    QString targetFolder;
-    QStringList gobPaths;
-    LogViewer *gobLogViewer;
-    QStringList *targetDirectories;
-    QStringList *sourceFiles;
-    SearchDialog *gobSearchDialog;
+    QThread *thread;                //Global worker thread.
+    Worker *worker;                 //Global worker.
+    QFileDialog *dialog;            //File dialog object.
+    QString targetFolder;           //Target folder path.
+    QStringList gobPaths;           //Files paths array.
+    LogViewer *gobLogViewer;        //Global log viewer object.
+    QStringList *targetDirectories; //Target directories array.
+    QStringList *sourceFiles;       //Source fies to be copied.
+    SearchDialog *gobSearchDialog;  //Global search and replace dialog object.
 
     int giKeep;                     //Stop copy flag
     int giCurrentPos;               //Current carret position in the fromFilesTextArea for the ',' character
@@ -114,11 +108,11 @@ private:
     int giProgress;                 //Copy progress counter
     int validatorFlag;              //Backup button disable flag
     int giCopyFileIndex;            //Index for the current file being copied
-    int giPathIndex;
+    int giPathIndex;                //Current path index for the Paths array.
     bool gbBackcupButtonPressed;    //Backup button control flag (true if pressed)
     bool gbCountCancel;             //Flag for interrupt the file counting on text change, into the sources text edit.
-
-    int giErrorOnCopyFlag;
+    bool gbScanDisabled;            //Flag for on_fromFilesTextArea_textChanged activation control.
+    int giErrorOnCopyFlag;          //Flag to indicate a copy failure.
 
 };
 
