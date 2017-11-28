@@ -119,7 +119,7 @@ void Worker::worker_slot_copyFile(QString srcFilePath, QString tgtFilePath)
 
 void Worker::worker_slot_scanFolders(QString aobFolderPath)
 {
-    qDebug() << "Begin worker_slot_scanFolders " << "aobFolderPath: " << aobFolderPath;
+    //qDebug() << "Begin worker_slot_scanFolders " << "aobFolderPath: " << aobFolderPath;
     emit worker_signal_statusInfo("Counting files, please wait...");
     giFoldersCounter = 0;
     giFileCounter = 0;
@@ -134,7 +134,7 @@ void Worker::worker_slot_scanFolders(QString aobFolderPath)
     else {
         countAllFiles(aobFolderPath.trimmed());
     }
-    qDebug() << "End worker_slot_scanFolders";
+    //qDebug() << "End worker_slot_scanFolders";
 }
 
 void Worker::countAllFiles(QString path)
@@ -153,7 +153,7 @@ void Worker::countAllFiles(QString path)
             }
 
             if(giFileCounter % 50 == 0) emit(worker_signal_setTotalFilesAndFolders(giFileCounter,giFoldersCounter,giTotalFilesSize / 1000000));
-            qDebug() << "worker: Emitting scanReady SIGNAL";
+            //qDebug() << "worker: Emitting scanReady SIGNAL";
             emit worker_signal_scanReady();
         }else{
             emitCountersSignals();
