@@ -546,7 +546,6 @@ void BUMain::on_fromFilesTextArea_textChanged()
             giCurrentNumPos = lsAreaText.lastIndexOf("#");
 
             if(gobPaths.length() > 0) {
-                qDebug() << "gobPaths.length()" << QString::number(gobPaths.length());
                 connect(this,SIGNAL(main_signal_scanFolders(QString)),worker,SLOT(worker_slot_scanFolders(QString)));
                 gbCountCancel = false;
                 worker->blockSignals(false);
