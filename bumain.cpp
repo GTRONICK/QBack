@@ -820,7 +820,7 @@ void BUMain::on_actionAbout_triggered()
                             "<p><a href='https://github.com/GTRONICK/QBack/releases/tag/v1.9.0'>Help Manual for this version</a>"
                             "<p><a href='http://www.gtronick.com'>GTRONICK</a>");
 
-    QMessageBox::about(this, tr("About QBack 1.8.1"),
+    QMessageBox::about(this, tr("About QBack 1.9.0"),
     tr(helpText));
     //qDebug() << "End on_actionAbout_triggered"
 }
