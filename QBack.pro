@@ -31,3 +31,5 @@ FORMS    += bumain.ui \
 
 RESOURCES += \
     img/icons.qrc
+
+win32:RC_ICONS += img/QBackLogo.ico
