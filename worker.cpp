@@ -24,29 +24,46 @@ Worker::Worker(QObject *parent) :
     gobFilesList = new QStringList;
 }
 
-void Worker::setFileCounter(int value)
+/**
+ * @brief Worker::ResetFileCounter
+ * Resets the file counter variable, and the paths lists.
+ */
+void Worker::ResetFileCounter()
 {
-    giCurrentFileIndex = value;
+    //qDebug() << "Begin ResetFileCounter";
+    giCurrentFileIndex = 0;
     gobDirList->clear();
     gobFilesList->clear();
+    //qDebug() << "End ResetFileCounter";
 }
 
+/**
+ * @brief Worker::worker_slot_setStopFlag
+ * Sets the flag to stop the current copy.
+ * @param value 1: Stop, Other value: Continue.
+ */
 void Worker::worker_slot_setStopFlag(int value)
 {
-    // qDebug() << "worker: setStopFlag SIGNAL received with value: " << value;
+    //qDebug() << "worker_slot_setStopFlag, value = " << QString::number(value);
     giStopDirCopy = value;
     if(value == 1){
-        // qDebug() << "worker: Clearing lists";
-        gobDirList->clear();
-        gobFilesList->clear();
-        giCurrentFileIndex = 0;
+        this->ResetFileCounter();
     }
+    //qDebug() << "End worker_slot_setStopFlag";
 }
 
-void Worker::worker_slot_createDirs(QString sourceFileOrFolder,QString destinationFolder,int giKeep)
+/**
+ * @brief Worker::worker_slot_createDirs
+ * Validates the creation of the directory passed as argument.
+ * @param asSourceFileOrFolder Source file, or folder to be copied.
+ * @param asDestinationFolder Folder where the file, or folder, will be copied to.
+ * @param aiKeep Flag to control the copy of the next path.
+ */
+void Worker::worker_slot_createDirs(QString asSourceFileOrFolder,QString asDestinationFolder,int aiKeep)
 {
-    if(giKeep == 0){
-        if(!copyDirsRecursively(sourceFileOrFolder,destinationFolder)){
+    //qDebug() << "Begin worker_slot_createDirs, asSourceFileOrFolder=" << asSourceFileOrFolder << " asDestinationFolder=" << asDestinationFolder;
+    if(aiKeep == 0){
+        if(!copyDirsRecursively(asSourceFileOrFolder,asDestinationFolder)){
             emit worker_signal_logInfo("Folder can't be copied!, it may already exist in the destintaion target");
             emit worker_signal_showMessage("Folder cannot be copied. It may already exist or you don't have enought permissions \nOpen the target and verify if it already exist", QMessageBox::Critical);
             this->worker_slot_setStopFlag(1);
@@ -54,41 +71,54 @@ void Worker::worker_slot_createDirs(QString sourceFileOrFolder,QString destinati
             emit(worker_signal_keepCopying());
         }
     }
+    //qDebug() << "End worker_slot_createDirs";
 }
 
+/**
+ * @brief Worker::worker_slot_readyToStartCopy
+ * Send the updated files and folders arrays to start the copy.
+ */
 void Worker::worker_slot_readyToStartCopy()
 {
-    emit(worker_signal_sendDirAndFileList(gobDirList,gobFilesList));
+    //qDebug() << "Begin worker_slot_readyToStartCopy";
+    emit worker_signal_sendDirAndFileList(gobDirList,gobFilesList);
+    //qDebug() << "End worker_slot_readyToStartCopy";
 }
 
-void Worker::worker_slot_copyFile(QString srcFilePath, QString tgtFilePath)
+/**
+ * @brief Worker::worker_slot_copyFile
+ * Copies a file to the especified folder.
+ * @param asSourceFilePath
+ * @param asTargetFilePath
+ */
+void Worker::worker_slot_copyFile(QString asSourceFilePath, QString asTargetFilePath)
 {
-    // qDebug() << "worker: copyFile SIGNAL received with " << srcFilePath << ", " << tgtFilePath;
+    //qDebug() << "Begin worker_slot_copyFile, asSourceFilePath=" << asSourceFilePath << " asTargetFilePath=" << asTargetFilePath;
     QString fileName;
     QString extension = "";
     QStringList matches;
 
-    if(!QFileInfo(srcFilePath).completeSuffix().isEmpty()){
-        extension = "."+QFileInfo(srcFilePath).completeSuffix();
+    if(!QFileInfo(asSourceFilePath).completeSuffix().isEmpty()){
+        extension = "."+QFileInfo(asSourceFilePath).completeSuffix();
     }
 
-    fileName = QFileInfo(srcFilePath).baseName() + extension;
+    fileName = QFileInfo(asSourceFilePath).baseName() + extension;
 
-    gobFile = new QFile(srcFilePath);
+    gobFile = new QFile(asSourceFilePath);
 
     if(gbIsRenameEnabled){
 
         matches = gobFilesList->filter(QRegExp(fileName));
 
         if(matches.length() > 1){
-            fileName = QFileInfo(srcFilePath).baseName() +
-                    "_" + QFileInfo(srcFilePath).dir().absolutePath().replace(QRegExp("[\\/:]"),"_") +
+            fileName = QFileInfo(asSourceFilePath).baseName() +
+                    "_" + QFileInfo(asSourceFilePath).dir().absolutePath().replace(QRegExp("[\\/:]"),"_") +
                     extension;
         }
     }
 
-    if (QFile::exists(tgtFilePath+"/"+fileName)){
-        QFile::remove(tgtFilePath+"/"+fileName);
+    if (QFile::exists(asTargetFilePath+"/"+fileName)){
+        QFile::remove(asTargetFilePath+"/"+fileName);
     }
 
     emit(worker_signal_statusInfo("Copying file #" + QString::number(giCurrentFileIndex + 1) + " : " + fileName));
@@ -96,27 +126,31 @@ void Worker::worker_slot_copyFile(QString srcFilePath, QString tgtFilePath)
     QApplication::processEvents();
 
     if(giStopDirCopy == 0){
-        if(gobFile->copy(tgtFilePath+"/"+fileName)){
+        if(gobFile->copy(asTargetFilePath+"/"+fileName)){
             QApplication::processEvents();
             giCurrentFileIndex ++;
-            emit(worker_signal_logInfo(QDateTime::currentDateTime().toString() + ":  " + "#" + QString::number(giCurrentFileIndex) + "  " + srcFilePath + "   copied to:   " + tgtFilePath));
+            emit(worker_signal_logInfo(QDateTime::currentDateTime().toString() + ":  " + "#" + QString::number(giCurrentFileIndex) + "  " + asSourceFilePath + "   copied to:   " + asTargetFilePath));
             emit(worker_Signal_updateProgressBar(giCurrentFileIndex));
         }else{
-            if(!QFile(srcFilePath).exists()){
-                emit(worker_signal_logInfo(QDateTime::currentDateTime().toString() + " ERROR! File: " + srcFilePath + " does not exist."));
-            }else if(!QDir(tgtFilePath).exists()){
-                emit(worker_signal_logInfo(QDateTime::currentDateTime().toString() + " ERROR! Folder: " + tgtFilePath + " does not exist."));
+            if(!QFile(asSourceFilePath).exists()){
+                emit(worker_signal_logInfo(QDateTime::currentDateTime().toString() + " ERROR! File: " + asSourceFilePath + " does not exist."));
+            }else if(!QDir(asTargetFilePath).exists()){
+                emit(worker_signal_logInfo(QDateTime::currentDateTime().toString() + " ERROR! Folder: " + asTargetFilePath + " does not exist."));
             }else{
-                emit(worker_signal_logInfo(QDateTime::currentDateTime().toString() + " ERROR! File: " + srcFilePath + " could not be copied. The file might be locked by another process."));
+                emit(worker_signal_logInfo(QDateTime::currentDateTime().toString() + " ERROR! File: " + asSourceFilePath + " could not be copied. The file might be locked by another process."));
             }
             emit worker_signal_errorOnCopy();
         }
-        // qDebug() << "worker: Emmiting SIGNAL copyNextFile";
         emit(worker_signal_copyNextFile());
-
     }
+    //qDebug() << "End worker_slot_copyFile";
 }
 
+/**
+ * @brief Worker::worker_slot_scanFolders
+ * Prepares the worker for count the files inside the path.
+ * @param aobFolderPath
+ */
 void Worker::worker_slot_scanFolders(QString aobFolderPath)
 {
     //qDebug() << "Begin worker_slot_scanFolders " << "aobFolderPath: " << aobFolderPath;
@@ -137,12 +171,18 @@ void Worker::worker_slot_scanFolders(QString aobFolderPath)
     //qDebug() << "End worker_slot_scanFolders";
 }
 
-void Worker::countAllFiles(QString path)
+/**
+ * @brief Worker::countAllFiles
+ * Counts all the files inside a directory.
+ * @param asPathToScan
+ */
+void Worker::countAllFiles(QString asPathToScan)
 {
+    //qDebug() << "Begin countAllFiles, asPathToScan=" << asPathToScan;
     gobIterator = NULL;
-    QFileInfo lobFileInfo(path);
+    QFileInfo lobFileInfo(asPathToScan);
     if(lobFileInfo.isDir()){
-        gobIterator = new QDirIterator(path,QDir::AllEntries | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System | QDir::NoSymLinks,QDirIterator::Subdirectories);
+        gobIterator = new QDirIterator(asPathToScan,QDir::AllEntries | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System | QDir::NoSymLinks,QDirIterator::Subdirectories);
         if(gobIterator->hasNext()){
             QFileInfo source(gobIterator->next());
             if(source.isFile()){
@@ -166,11 +206,16 @@ void Worker::countAllFiles(QString path)
         emitCountersSignals();
         emit worker_signal_workerDone();
     }
+    //qDebug() << "End countAllFiles";
 }
 
+/**
+ * @brief Worker::worker_slot_scanNextPath
+ * Slot used to scan the files, in the next path if available.
+ */
 void Worker::worker_slot_scanNextPath()
 {
-    // qDebug() << "worker: scanNextPath SIGNAL received";
+    //qDebug() << "Begin worker_slot_scanNextPath";
     if(gobIterator!=NULL && gobIterator->hasNext()){
         QFileInfo source(gobIterator->next());
         if(source.isFile()){
@@ -181,90 +226,100 @@ void Worker::worker_slot_scanNextPath()
         }
 
         if(giFileCounter % 50 == 0) emit(worker_signal_setTotalFilesAndFolders(giFileCounter,giFoldersCounter,giTotalFilesSize / 1000000));
-        // qDebug() << "worker: emitting scanReady SIGNAL";
         emit(worker_signal_scanReady());
     }else if(emitFlag == 0){
         emitFlag = 1;
-        // qDebug() << "worker: Emitting counters SIGNALS from worker_slot_scanNextPath";
         emitCountersSignals();
         emit worker_signal_workerDone();
     }
-}
-
-void Worker::worker_slot_renameEnable(bool value)
-{
-    gbIsRenameEnabled = value;
+    //qDebug() << "End worker_slot_scanNextPath";
 }
 
 /**
-  Copies directories recursively.
-  @param srcFilePath Source folder.
-  @param tgtFilePath Target folder.
-  @return True, if the copy was successful, false otherwise.
-*/
-bool Worker::copyDirsRecursively(QString srcFilePath, QString tgtFilePath)
+ * @brief Worker::worker_slot_renameEnable
+ * Slot used to control the autorename feature.
+ * @param abValue
+ */
+void Worker::worker_slot_renameEnable(bool abValue)
+{
+    //qDebug() << "Begin worker_slot_renameEnable";
+    gbIsRenameEnabled = abValue;
+    //qDebug() << "End worker_slot_renameEnable";
+}
+
+/**
+ * @brief Worker::copyDirsRecursively
+ * Copies a directory in a recursive manner.
+ * @param asSourceFilePath
+ * @param asTargetFilePath
+ * @return
+ */
+bool Worker::copyDirsRecursively(QString asSourceFilePath, QString asTargetFilePath)
 {   
+    //qDebug() << "Begin copyDirsRecursively";
     QString lsTargetDir;
-    bool unixHidden;
-    QFileInfo source(srcFilePath);
+    QFileInfo source(asSourceFilePath);
     QDir::Filters lobFilters = QDir::AllEntries | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System | QDir::NoSymLinks;
 
-    if(!createDirectory(tgtFilePath)){
-        emit worker_signal_logInfo("Folder: " + tgtFilePath + " cannot be created. You have no write permissions on the target.");
+    if(!createDirectory(asTargetFilePath)){
+        emit worker_signal_logInfo("Folder: " + asTargetFilePath + " cannot be created. You have no write permissions on the target.");
         emit worker_signal_showMessage("Error creating target folder. See the log for details.", QMessageBox::Critical);
+        //qDebug() << "End copyDirsRecursively, false";
         return false;
     }
 
     if(source.isDir()){
 
-        QDir sourceDir(srcFilePath);
+        QDir sourceDir(asSourceFilePath);
         QStringList fileNames = sourceDir.entryList(lobFilters);
 
         sourceDir.setFilter(lobFilters);
 
         if(source.baseName().isEmpty()){
-            lsTargetDir = tgtFilePath + QLatin1Char('/') + "." + source.completeSuffix();
-            unixHidden = true;
+            lsTargetDir = asTargetFilePath + QLatin1Char('/') + "." + source.completeSuffix();
         }else{
-            lsTargetDir = tgtFilePath + QLatin1Char('/') + source.baseName();
-            unixHidden = false;
+            lsTargetDir = asTargetFilePath + QLatin1Char('/') + source.fileName();
         }
 
         if(!sourceDir.mkdir(lsTargetDir)){
             emit worker_signal_logInfo("Folder: " + lsTargetDir + " cannot be created. It may already exist");
         }
 
-        if(unixHidden) {
-            for(int index = 0; index < fileNames.length(); index ++){
-                copyDirsRecursively(sourceDir.absolutePath() + "/" + fileNames.at(index),tgtFilePath + QLatin1Char('/') + "." + source.completeSuffix());
-            }
-        }else {
-            for(int index = 0; index < fileNames.length(); index ++){
-                copyDirsRecursively(sourceDir.absolutePath() + "/" + fileNames.at(index),tgtFilePath + QLatin1Char('/') + source.baseName());
-            }
+        for(int index = 0; index < fileNames.length(); index ++){
+            copyDirsRecursively(sourceDir.absolutePath() + "/" + fileNames.at(index),lsTargetDir);
         }
 
     }else{
 
         QApplication::processEvents();
         if(giStopDirCopy == 0){
-            gobFilesList->append(srcFilePath);
-            gobDirList->append(tgtFilePath+"/");
+            gobFilesList->append(asSourceFilePath);
+            gobDirList->append(asTargetFilePath+"/");
         }
     }
 
+    //qDebug() << "End copyDirsRecursively, true";
     return true;
 }
 
-bool Worker::createDirectory(QString path)
+/**
+ * @brief Worker::createDirectory
+ * Creates the specified directory.
+ * @param asPath
+ * @return
+ */
+bool Worker::createDirectory(QString asPath)
 {
-    QDir targetDir(path);
-    if(!targetDir.mkpath(path)){
-        return false;
-    }
-    return true;
+    //qDebug() << "Begin createDirectory, asPath=" << asPath;
+    QDir targetDir(asPath);
+    //qDebug() << "End createDirectory";
+    return targetDir.mkpath(asPath);
 }
 
+/**
+ * @brief Worker::emitCountersSignals
+ * Emits the signals to update the files and folders counters.
+ */
 void Worker::emitCountersSignals()
 {
     //qDebug() << "Begin emitCountersSignals";

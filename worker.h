@@ -13,8 +13,8 @@ class Worker : public QObject
     Q_OBJECT
 public:
     explicit Worker(QObject *parent = 0);
-    void setFileCounter(int value);
-    bool createDirectory(QString path);
+    void ResetFileCounter();
+    bool createDirectory(QString asPath);
 
 signals:
     void worker_Signal_updateProgressBar(int value);
@@ -31,16 +31,16 @@ signals:
 
 public slots:
     void worker_slot_setStopFlag(int value);
-    void worker_slot_createDirs(QString sourceFileOrFolder, QString destinationFolder, int giKeep);
+    void worker_slot_createDirs(QString sourceFileOrFolder, QString destinationFolder, int aiKeep);
     void worker_slot_readyToStartCopy();
-    void worker_slot_copyFile(QString srcFilePath, QString tgtFilePath);
+    void worker_slot_copyFile(QString asSourceFilePath, QString asTargetFilePath);
     void worker_slot_scanFolders(QString aobFolderPath);
     void worker_slot_scanNextPath();
-    void worker_slot_renameEnable(bool value);
+    void worker_slot_renameEnable(bool abValue);
 
 private:
-    bool copyDirsRecursively(QString srcFilePath, QString tgtFilePath);
-    void countAllFiles(QString path);
+    bool copyDirsRecursively(QString asSourceFilePath, QString asTargetFilePath);
+    void countAllFiles(QString asPathToScan);
     void emitCountersSignals();
 
     int giCurrentFileIndex;         //Current file index for progressbar and logs.
