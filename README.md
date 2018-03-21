@@ -1,4 +1,4 @@
-# QBack
+# QBack 1.9.1
 A simple, but powerful backup utility.
 
 ![QBack_GUI](https://sites.google.com/site/gtronick/QBack1.5.0.PNG)
@@ -8,7 +8,7 @@ QBack lets you copy files from several paths, to several targets. You can also s
 # 1. HOW TO USE
 -------------------------------
 
-Download the latest release from : ![QBack 1.9.0](https://github.com/GTRONICK/QBack/releases/tag/v1.9.0)
+Download the latest release from : ![QBack 1.9.1](https://github.com/GTRONICK/QBack/releases/tag/v1.9.0)
 
 ## A. Copying one folder recursively:
 
@@ -92,4 +92,7 @@ QT5 must be installed. (qt5-base or download the QTCreator IDE from www.qt.io/do
 
 Alternatively, you can use QTCreator 5.8+ to load the project, and compile it for your distribution and architecture.
 
+# 3. IN THIS VERSION
+------------------------------------------------
 
+Open origin feature: Pressing Left Ctrl, will change the Open Target button text, to Open Origin, allowing you to open the first path from the sources text area, which must be a directory.
