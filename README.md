@@ -8,7 +8,7 @@ QBack lets you copy files from several paths, to several targets. You can also s
 # 1. HOW TO USE
 -------------------------------
 
-Download the latest release from : ![QBack 1.9.1](https://github.com/GTRONICK/QBack/releases/tag/v1.9.0)
+Download the latest release from : ![QBack 1.9.1](https://github.com/GTRONICK/QBack/releases/tag/v1.9.1)
 
 ## A. Copying one folder recursively:
 
