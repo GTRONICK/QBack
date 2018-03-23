@@ -80,13 +80,15 @@ private:
     void resetCounters();
     void checkBackupButton();
     void resetState();
+    void keyPressEvent(QKeyEvent *event);
+    void keyReleaseEvent(QKeyEvent *event);
     QString removeTrailingSlashes(QString lsString);
 
     Ui::BUMain *ui;
     QThread *thread;                //Global worker thread.
     Worker *worker;                 //Global worker.
     QFileDialog *dialog;            //File dialog object.
-    QString targetFolder;           //Target folder path.
+    QString gsTargetFile;           //Target folder path.
     QStringList gobPaths;           //Files paths array.
     LogViewer *gobLogViewer;        //Global log viewer object.
     QStringList *targetDirectories; //Target directories array.
@@ -112,6 +114,7 @@ private:
     bool gbBackcupButtonPressed;    //Backup button control flag (true if pressed)
     bool gbCountCancel;             //Flag for interrupt the file counting on text change, into the sources text edit.
     bool gbScanDisabled;            //Flag for on_fromFilesTextArea_textChanged activation control.
+    bool gbIsCtrlPressed;
     int giErrorOnCopyFlag;          //Flag to indicate a copy failure.
 
 };
