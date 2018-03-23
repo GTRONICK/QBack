@@ -8,5 +8,7 @@
         <file>openTargetFolder.png</file>
         <file>cancelCopy.png</file>
         <file>QBackLogo.png</file>
+        <file>folder_explore.png</file>
+        <file>folder_file.png</file>
     </qresource>
 </RCC>
