@@ -295,6 +295,7 @@ void BUMain::on_originButton_clicked()
     dialog->setFileMode(QFileDialog::Directory);
     dialog->setOption(QFileDialog::ShowDirsOnly,true);
     dialog->setOption(QFileDialog::HideNameFilterDetails);
+    dialog->setDirectory(gsTargetFile);
     if(dialog->exec()){
         gsTargetFile = dialog->selectedFiles().at(0);
     }
@@ -318,15 +319,18 @@ void BUMain::on_targetButton_clicked()
     //qDebug() << "Begin on_targetButton_clicked";
     dialog->setFileMode(QFileDialog::Directory);
     dialog->setOption(QFileDialog::ShowDirsOnly,true);
+    dialog->setDirectory(ui->toFilesTextField->text());
     if(dialog->exec()){
         gsTargetFile = dialog->selectedFiles().at(0);
     }
 
-    if(gsTargetFile != NULL && gsTargetFile != "" && giTmpTotalFiles > 0){
-        ui->backupButton->setEnabled(true);
+    if(gsTargetFile != NULL && gsTargetFile != ""){
+        ui->toFilesTextField->setText(gsTargetFile);
     }
 
-    ui->toFilesTextField->setText(gsTargetFile);
+    if(giTmpTotalFiles > 0 ) {
+        ui->backupButton->setEnabled(true);
+    }
     //qDebug() << "End on_targetButton_clicked";
 }
 
@@ -990,7 +994,7 @@ void BUMain::keyPressEvent(QKeyEvent *event)
     switch (event->nativeScanCode()) {
     case 29: // left ctrl
         gbIsCtrlPressed = true;
-        ui->openTargetButton->setText("Open Origin");
+        ui->openTargetButton->setText("Open &Origin");
         break;
     }
 }
@@ -1000,7 +1004,7 @@ void BUMain::keyReleaseEvent(QKeyEvent *event)
     switch (event->nativeScanCode()) {
     case 29: // left ctrl
         gbIsCtrlPressed = false;
-        ui->openTargetButton->setText("Open Target");
+        ui->openTargetButton->setText("Open &Target");
         break;
     }
 }
