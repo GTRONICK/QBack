@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>728</width>
-    <height>330</height>
+    <height>306</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -37,7 +37,7 @@
           <property name="minimumSize">
            <size>
             <width>0</width>
-            <height>40</height>
+            <height>30</height>
            </size>
           </property>
           <property name="text">
@@ -45,7 +45,7 @@
           </property>
           <property name="icon">
            <iconset resource="img/icons.qrc">
-            <normaloff>:/icons/file.png</normaloff>:/icons/file.png</iconset>
+            <normaloff>:/icons/folder_file.png</normaloff>:/icons/folder_file.png</iconset>
           </property>
          </widget>
         </item>
@@ -182,7 +182,7 @@
           </property>
           <property name="icon">
            <iconset resource="img/icons.qrc">
-            <normaloff>:/icons/openFolder.png</normaloff>:/icons/openFolder.png</iconset>
+            <normaloff>:/icons/folder_explore.png</normaloff>:/icons/folder_explore.png</iconset>
           </property>
          </widget>
         </item>
@@ -197,7 +197,7 @@
           <property name="sizeHint" stdset="0">
            <size>
             <width>20</width>
-            <height>30</height>
+            <height>9</height>
            </size>
           </property>
          </spacer>
@@ -217,7 +217,7 @@
            </size>
           </property>
           <property name="text">
-           <string>&amp;Log viewer</string>
+           <string>Log vie&amp;wer</string>
           </property>
           <property name="icon">
            <iconset resource="img/icons.qrc">
@@ -277,7 +277,7 @@
             <property name="minimumSize">
              <size>
               <width>200</width>
-              <height>60</height>
+              <height>40</height>
              </size>
             </property>
             <property name="maximumSize">
@@ -344,7 +344,7 @@
             <property name="minimumSize">
              <size>
               <width>200</width>
-              <height>60</height>
+              <height>40</height>
              </size>
             </property>
             <property name="maximumSize">
@@ -428,7 +428,7 @@
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
-     <string>File</string>
+     <string>&amp;File</string>
     </property>
     <addaction name="actionOpen_session"/>
     <addaction name="actionSave_session"/>
@@ -437,7 +437,7 @@
    </widget>
    <widget class="QMenu" name="menuSettings">
     <property name="title">
-     <string>Settings</string>
+     <string>&amp;Settings</string>
     </property>
     <addaction name="actionLoad_theme"/>
     <addaction name="actionDefault_theme"/>
@@ -446,13 +446,13 @@
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
-     <string>Help</string>
+     <string>&amp;Help</string>
     </property>
     <addaction name="actionAbout"/>
    </widget>
    <widget class="QMenu" name="menuToold">
     <property name="title">
-     <string>Tools</string>
+     <string>Too&amp;ls</string>
     </property>
     <addaction name="actionFind_in_sources"/>
     <addaction name="actionInsert_Target_path"/>
@@ -464,7 +464,7 @@
   </widget>
   <action name="actionOpen_session">
    <property name="text">
-    <string>Open session...</string>
+    <string>&amp;Open session...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
@@ -472,7 +472,7 @@
   </action>
   <action name="actionSave_session">
    <property name="text">
-    <string>Save session</string>
+    <string>&amp;Save session</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
@@ -480,7 +480,7 @@
   </action>
   <action name="actionQuit">
    <property name="text">
-    <string>Quit</string>
+    <string>&amp;Quit</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Q</string>
@@ -488,7 +488,7 @@
   </action>
   <action name="actionLoad_theme">
    <property name="text">
-    <string>Load theme</string>
+    <string>&amp;Load theme</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+T</string>
@@ -496,15 +496,15 @@
   </action>
   <action name="actionAbout">
    <property name="text">
-    <string>About</string>
+    <string>&amp;About</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+A</string>
+    <string>F1</string>
    </property>
   </action>
   <action name="actionFind_in_sources">
    <property name="text">
-    <string>Find in sources...</string>
+    <string>&amp;Find in sources...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+F</string>
@@ -512,7 +512,7 @@
   </action>
   <action name="actionDefault_theme">
    <property name="text">
-    <string>Default theme</string>
+    <string>&amp;Default theme</string>
    </property>
   </action>
   <action name="actionDisable_folder_overwriting">
@@ -534,7 +534,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Enable auto rename</string>
+    <string>&amp;Enable auto rename</string>
    </property>
   </action>
   <action name="actionLock_sources_file_counting">

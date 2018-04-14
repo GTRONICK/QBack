@@ -97,28 +97,32 @@ void Worker::worker_slot_copyFile(QString asSourceFilePath, QString asTargetFile
     QString fileName;
     QString extension = "";
     QStringList matches;
+    QString lsSource = asSourceFilePath;
+    QString lsTarget = asTargetFilePath;
 
-    if(!QFileInfo(asSourceFilePath).completeSuffix().isEmpty()){
-        extension = "."+QFileInfo(asSourceFilePath).completeSuffix();
+    if(!QFileInfo(lsSource).completeSuffix().isEmpty()){
+        extension = "."+QFileInfo(lsSource).completeSuffix();
     }
 
-    fileName = QFileInfo(asSourceFilePath).baseName() + extension;
+    fileName = QFileInfo(lsSource).baseName() + extension;
 
-    gobFile = new QFile(asSourceFilePath);
+    gobFile = new QFile(lsSource);
 
     if(gbIsRenameEnabled){
 
         matches = gobFilesList->filter(QRegExp(fileName));
 
         if(matches.length() > 1){
-            fileName = QFileInfo(asSourceFilePath).baseName() +
-                    "_" + QFileInfo(asSourceFilePath).dir().absolutePath().replace(QRegExp("[\\/:]"),"_") +
-                    extension;
+            QString lsDirName = QFileInfo(lsTarget).dir().absolutePath()+ "/" + QFileInfo(lsSource).dir().absolutePath().replace(":/","/");
+            QDir lobDir;
+            lobDir.mkpath(lsDirName);
+            fileName = QFileInfo(lsSource).baseName() + extension;
+            lsTarget = lsDirName;
         }
     }
 
-    if (QFile::exists(asTargetFilePath+"/"+fileName)){
-        QFile::remove(asTargetFilePath+"/"+fileName);
+    if (QFile::exists(lsTarget+"/"+fileName)){
+        QFile::remove(lsTarget+"/"+fileName);
     }
 
     emit(worker_signal_statusInfo("Copying file #" + QString::number(giCurrentFileIndex + 1) + " : " + fileName));
@@ -126,18 +130,18 @@ void Worker::worker_slot_copyFile(QString asSourceFilePath, QString asTargetFile
     QApplication::processEvents();
 
     if(giStopDirCopy == 0){
-        if(gobFile->copy(asTargetFilePath+"/"+fileName)){
+        if(gobFile->copy(lsTarget+"/"+fileName)){
             QApplication::processEvents();
             giCurrentFileIndex ++;
-            emit(worker_signal_logInfo(QDateTime::currentDateTime().toString() + ":  " + "#" + QString::number(giCurrentFileIndex) + "  " + asSourceFilePath + "   copied to:   " + asTargetFilePath));
+            emit(worker_signal_logInfo(QDateTime::currentDateTime().toString() + ":  " + "#" + QString::number(giCurrentFileIndex) + "  " + lsSource + "   copied to:   " + lsTarget));
             emit(worker_Signal_updateProgressBar(giCurrentFileIndex));
         }else{
-            if(!QFile(asSourceFilePath).exists()){
-                emit(worker_signal_logInfo(QDateTime::currentDateTime().toString() + " ERROR! File: " + asSourceFilePath + " does not exist."));
-            }else if(!QDir(asTargetFilePath).exists()){
-                emit(worker_signal_logInfo(QDateTime::currentDateTime().toString() + " ERROR! Folder: " + asTargetFilePath + " does not exist."));
+            if(!QFile(lsSource).exists()){
+                emit(worker_signal_logInfo(QDateTime::currentDateTime().toString() + " ERROR! File: " + lsSource + " does not exist."));
+            }else if(!QDir(lsTarget).exists()){
+                emit(worker_signal_logInfo(QDateTime::currentDateTime().toString() + " ERROR! Folder: " + lsSource + " does not exist."));
             }else{
-                emit(worker_signal_logInfo(QDateTime::currentDateTime().toString() + " ERROR! File: " + asSourceFilePath + " could not be copied. The file might be locked by another process."));
+                emit(worker_signal_logInfo(QDateTime::currentDateTime().toString() + " ERROR! File: " + lsSource + " could not be copied. The file might be locked by another process."));
             }
             emit worker_signal_errorOnCopy();
         }

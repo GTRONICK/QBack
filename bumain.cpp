@@ -25,6 +25,7 @@ BUMain::BUMain(QWidget *parent) :
     gobSearchDialog = new SearchDialog(this);
     targetDirectories = new QStringList;
     sourceFiles = new QStringList;
+    gsThemeFile = "";
 
     giCurrentPos = -1;
     giCurrentNumPos = -1;
@@ -39,13 +40,8 @@ BUMain::BUMain(QWidget *parent) :
     gbCountCancel = false;
     gbScanDisabled = false;
 
-    QFile styleFile("style.qss");
-    if(styleFile.exists()){
-        if(styleFile.open(QFile::ReadOnly)){
-            QString StyleSheet = QLatin1String(styleFile.readAll());
-            this->setStyleSheet(StyleSheet);
-        }
-    }
+    gbIsCtrlPressed = false;
+    gsTargetFile = "";
     this->resetCounters();
     this->installEventFilters();
     this->move(QApplication::desktop()->screen()->rect().center() - this->rect().center());
@@ -53,7 +49,65 @@ BUMain::BUMain(QWidget *parent) :
     this->ui->openTargetButton->setEnabled(false);
     this->initThreadSetup();
     this->loadSessionFile("Session.txt");
+    this->loadConfig();
     //qDebug() << "End BUMain";
+}
+
+bool BUMain::saveConfig()
+{
+
+    QString configText = "[THEME]\n";
+    configText = configText + "themeFile=" + gsThemeFile + "\n";
+
+    if(!saveFile("config.ini",configText)) return false;
+    else return true;
+}
+
+bool BUMain::loadConfig()
+{
+    QString line;
+    QFile *lobConfigFile = new QFile("config.ini");
+    if(!lobConfigFile->open(QFile::ReadOnly)){
+
+        return false;
+    }
+
+    QTextStream lobInputStream(lobConfigFile);
+    while (!lobInputStream.atEnd()) {
+        line = lobInputStream.readLine();
+        if(line.startsWith("themeFile")) gsThemeFile = line.split("=").at(1);
+    }
+
+    QFile style(gsThemeFile);
+
+    if(style.exists() && style.open(QFile::ReadOnly)) {
+        QString styleContents = QLatin1String(style.readAll());
+        style.close();
+        this->setStyleSheet(styleContents);
+    }
+
+    lobInputStream.flush();
+    lobConfigFile->close();
+
+    return true;
+}
+
+bool BUMain::saveFile(QString asFileName, QString asText)
+{
+    QFile file(asFileName);
+
+    if(asFileName.isEmpty()) return false;
+
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)){
+        QMessageBox::critical(this,"Error","File could not be opened");
+        return false;
+    }
+
+    QTextStream out(&file);
+    out << asText;
+    file.close();
+
+    return true;
 }
 
 /**
@@ -286,18 +340,19 @@ void BUMain::on_backupButton_clicked()
 void BUMain::on_originButton_clicked()
 {
     //qDebug() << "Begin on_originButton_clicked";
-    targetFolder.clear();
+    gsTargetFile.clear();
     giTmpTotalFolders = 0;
 
     dialog->setFileMode(QFileDialog::Directory);
     dialog->setOption(QFileDialog::ShowDirsOnly,true);
     dialog->setOption(QFileDialog::HideNameFilterDetails);
+    dialog->setDirectory(gsTargetFile);
     if(dialog->exec()){
-        targetFolder = dialog->selectedFiles().at(0);
+        gsTargetFile = dialog->selectedFiles().at(0);
     }
 
-    if(targetFolder != NULL && targetFolder != ""){
-        QDir dir(targetFolder);
+    if(gsTargetFile != NULL && gsTargetFile != ""){
+        QDir dir(gsTargetFile);
         dir.setFilter(QDir::AllEntries | QDir::NoDotAndDotDot | QDir::NoSymLinks | QDir::Hidden | QDir::System);
         dir.setSorting(QDir::Type);
         if(dir.entryList().length() != 0) ui->fromFilesTextArea->clear();
@@ -315,15 +370,18 @@ void BUMain::on_targetButton_clicked()
     //qDebug() << "Begin on_targetButton_clicked";
     dialog->setFileMode(QFileDialog::Directory);
     dialog->setOption(QFileDialog::ShowDirsOnly,true);
+    dialog->setDirectory(ui->toFilesTextField->text());
     if(dialog->exec()){
-        targetFolder = dialog->selectedFiles().at(0);
+        gsTargetFile = dialog->selectedFiles().at(0);
     }
 
-    if(targetFolder != NULL && targetFolder != "" && giTmpTotalFiles > 0){
+    if(gsTargetFile != NULL && gsTargetFile != ""){
+        ui->toFilesTextField->setText(gsTargetFile);
+    }
+
+    if(giTmpTotalFiles > 0 ) {
         ui->backupButton->setEnabled(true);
     }
-
-    ui->toFilesTextField->setText(targetFolder);
     //qDebug() << "End on_targetButton_clicked";
 }
 
@@ -503,11 +561,27 @@ void BUMain::on_openTargetButton_clicked()
 
     if(ui->toFilesTextField->text() != NULL &&
             ui->toFilesTextField->text() != "" &&
-            !ui->toFilesTextField->text().startsWith(' '))
-    {
-        if(!QDesktopServices::openUrl(QUrl::fromLocalFile(ui->toFilesTextField->text())))
-        {
-            this->main_slot_showMessage("Target folder \"" + ui->toFilesTextField->text() + "\" not found!",QMessageBox::Critical);
+            !ui->toFilesTextField->text().startsWith(' ')) {
+        if(!gbIsCtrlPressed) {
+            if(!QDesktopServices::openUrl(QUrl::fromLocalFile(ui->toFilesTextField->text()))) {
+                this->main_slot_showMessage("Target folder \"" + ui->toFilesTextField->text() + "\" not found!",QMessageBox::Critical);
+            }
+        } else {
+            QString lsFisrtOrigin = ui->fromFilesTextArea->toPlainText();
+
+            lsFisrtOrigin = lsFisrtOrigin.split(",").at(0);
+
+            if(QFile(lsFisrtOrigin).exists() && QFileInfo(lsFisrtOrigin).isDir()) {
+                ui->statusBar->showMessage("Opening origin folder...",1000);
+                if(!QDesktopServices::openUrl(QUrl::fromLocalFile(lsFisrtOrigin))) {
+                    this->main_slot_showMessage("Origin folder \"" + ui->toFilesTextField->text() + "\" not found!",QMessageBox::Critical);
+                } else {
+                    gbIsCtrlPressed = false;
+                    ui->openTargetButton->setText("Open Target");
+                }
+            } else {
+                ui->statusBar->showMessage("The first path is not a folder!",1000);
+            }
         }
     }
     //qDebug() << "End on_openTargetButton_clicked";
@@ -681,10 +755,12 @@ void BUMain::resetCounters()
 void BUMain::closeEvent(QCloseEvent *event)
 {
     //qDebug() << "Begin closeEvent";
-    if(this->saveSessionToFile("Session.txt"))
+    if(this->saveSessionToFile("Session.txt")) {
+        this->saveConfig();
         event->accept();
-    else
+    } else {
         event->ignore();
+    }
     //qDebug() << "End closeEvent";
 }
 
@@ -790,6 +866,7 @@ void BUMain::on_actionQuit_triggered()
 {
     //qDebug() << "Begin on_actionQuit_triggered"
     this->saveSessionToFile("Session.txt");
+    this->saveConfig();
     QApplication::quit();
     //qDebug() << "End on_actionQuit_triggered"
 }
@@ -811,11 +888,11 @@ void BUMain::on_actionAbout_triggered()
                             "}"
                             "</style>"
                             "<p>Simple but powerful copy utility"
-                            "<p> Jaime A. Quiroga P."
-                            "<p><a href='https://github.com/GTRONICK/QBack/releases/tag/v1.9.0'>Help Manual for this version</a>"
+                            "<p>Jaime A. Quiroga P."
+                            "<p><a href='https://github.com/GTRONICK/QBack/releases/tag/v1.9.0'>Help for this version</a>"
                             "<p><a href='http://www.gtronick.com'>GTRONICK</a>");
 
-    QMessageBox::about(this, tr("About QBack 1.9.0"),
+    QMessageBox::about(this, tr("About QBack 1.9.1"),
     tr(helpText));
     //qDebug() << "End on_actionAbout_triggered"
 }
@@ -830,12 +907,12 @@ void BUMain::on_actionOpen_session_triggered()
 {
     //qDebug() << "Begin on_actionOpen_session_triggered"
     this->main_slot_disableFileScan();
-    targetFolder = QFileDialog::getOpenFileName(this, tr("Open Session"),
+    gsTargetFile = QFileDialog::getOpenFileName(this, tr("Open Session"),
                                                     "",
                                                     tr("Text files (*.txt);;All files(*.*)"));
 
-    if(targetFolder != NULL && targetFolder != ""){
-        loadSessionFile(targetFolder);
+    if(gsTargetFile != NULL && gsTargetFile != ""){
+        loadSessionFile(gsTargetFile);
     }
     //qDebug() << "End on_actionOpen_session_triggered"
 }
@@ -848,12 +925,12 @@ void BUMain::on_actionOpen_session_triggered()
 void BUMain::on_actionLoad_theme_triggered()
 {
     //qDebug() << "Begin on_actionLoad_theme_triggered"
-    targetFolder = QFileDialog::getOpenFileName(this, tr("Open Style"),
+    gsThemeFile = QFileDialog::getOpenFileName(this, tr("Open Style"),
                                                     "",
                                                     tr("Stylesheets (*.qss);;All files(*.*)"));
 
-    if(targetFolder != NULL && targetFolder != ""){
-        QFile styleFile(targetFolder);
+    if(gsThemeFile != NULL && gsThemeFile != ""){
+        QFile styleFile(gsThemeFile);
         styleFile.open(QFile::ReadOnly);
         QString StyleSheet = QLatin1String(styleFile.readAll());
         this->setStyleSheet(StyleSheet);
@@ -869,11 +946,15 @@ void BUMain::on_actionLoad_theme_triggered()
 void BUMain::on_actionSave_session_triggered()
 {
     //qDebug() << "Begin on_actionSave_session_triggered"
-    targetFolder = QFileDialog::getSaveFileName(this, tr("Save session"), "", tr("Text files (*.txt);;All files(*.*)"));
 
-    if(targetFolder != NULL && targetFolder != ""){
-        saveSessionToFile(targetFolder);
+    gsTargetFile = QFileDialog::getSaveFileName(this, tr("Save session"), ui->toFilesTextField->text().trimmed(), tr("Text files (*.txt);;All files(*.*)"));
+
+    if(gsTargetFile != NULL && !gsTargetFile.isEmpty()){
+        ui->statusBar->showMessage("Saving current session to file...",1000);
+        saveSessionToFile(gsTargetFile);
     }
+
+
     //qDebug() << "End on_actionSave_session_triggered"
 }
 
@@ -896,6 +977,7 @@ void BUMain::on_actionDefault_theme_triggered()
 {
     //qDebug() << "Begin on_actionDefault_theme_triggered"
     this->setStyleSheet("");
+    gsThemeFile = "";
     //qDebug() << "End on_actionDefault_theme_triggered"
 }
 
@@ -959,4 +1041,25 @@ void BUMain::on_actionInsert_Target_path_triggered()
     QTextCursor lobCursor = ui->fromFilesTextArea->textCursor();
     lobCursor.insertText(">" + ui->toFilesTextField->text() + "/");
     //qDebug() << "End on_actionInsert_Target_path_triggered"
+}
+
+void BUMain::keyPressEvent(QKeyEvent *event)
+{
+    //qDebug() << QString::number(event->nativeScanCode());
+    switch (event->nativeScanCode()) {
+    case 29: // left ctrl
+        gbIsCtrlPressed = true;
+        ui->openTargetButton->setText("Open &Origin");
+        break;
+    }
+}
+
+void BUMain::keyReleaseEvent(QKeyEvent *event)
+{
+    switch (event->nativeScanCode()) {
+    case 29: // left ctrl
+        gbIsCtrlPressed = false;
+        ui->openTargetButton->setText("Open &Target");
+        break;
+    }
 }
