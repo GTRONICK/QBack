@@ -80,6 +80,9 @@ private:
     void resetCounters();
     void checkBackupButton();
     void resetState();
+    bool loadConfig();
+    bool saveConfig();
+    bool saveFile(QString asFileName, QString asText);
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);
     QString removeTrailingSlashes(QString lsString);
@@ -94,6 +97,7 @@ private:
     QStringList *targetDirectories; //Target directories array.
     QStringList *sourceFiles;       //Source fies to be copied.
     SearchDialog *gobSearchDialog;  //Global search and replace dialog object.
+    QString gsThemeFile;            //Global style file path.
 
     int giKeep;                     //Stop copy flag
     int giCurrentPos;               //Current carret position in the fromFilesTextArea for the ',' character
