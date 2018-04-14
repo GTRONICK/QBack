@@ -25,6 +25,7 @@ BUMain::BUMain(QWidget *parent) :
     gobSearchDialog = new SearchDialog(this);
     targetDirectories = new QStringList;
     sourceFiles = new QStringList;
+    gsThemeFile = "";
 
     giCurrentPos = -1;
     giCurrentNumPos = -1;
@@ -41,14 +42,6 @@ BUMain::BUMain(QWidget *parent) :
 
     gbIsCtrlPressed = false;
     gsTargetFile = "";
-
-    QFile styleFile("style.qss");
-    if(styleFile.exists()){
-        if(styleFile.open(QFile::ReadOnly)){
-            QString StyleSheet = QLatin1String(styleFile.readAll());
-            this->setStyleSheet(StyleSheet);
-        }
-    }
     this->resetCounters();
     this->installEventFilters();
     this->move(QApplication::desktop()->screen()->rect().center() - this->rect().center());
@@ -56,7 +49,65 @@ BUMain::BUMain(QWidget *parent) :
     this->ui->openTargetButton->setEnabled(false);
     this->initThreadSetup();
     this->loadSessionFile("Session.txt");
+    this->loadConfig();
     //qDebug() << "End BUMain";
+}
+
+bool BUMain::saveConfig()
+{
+
+    QString configText = "[THEME]\n";
+    configText = configText + "themeFile=" + gsThemeFile + "\n";
+
+    if(!saveFile("config.ini",configText)) return false;
+    else return true;
+}
+
+bool BUMain::loadConfig()
+{
+    QString line;
+    QFile *lobConfigFile = new QFile("config.ini");
+    if(!lobConfigFile->open(QFile::ReadOnly)){
+
+        return false;
+    }
+
+    QTextStream lobInputStream(lobConfigFile);
+    while (!lobInputStream.atEnd()) {
+        line = lobInputStream.readLine();
+        if(line.startsWith("themeFile")) gsThemeFile = line.split("=").at(1);
+    }
+
+    QFile style(gsThemeFile);
+
+    if(style.exists() && style.open(QFile::ReadOnly)) {
+        QString styleContents = QLatin1String(style.readAll());
+        style.close();
+        this->setStyleSheet(styleContents);
+    }
+
+    lobInputStream.flush();
+    lobConfigFile->close();
+
+    return true;
+}
+
+bool BUMain::saveFile(QString asFileName, QString asText)
+{
+    QFile file(asFileName);
+
+    if(asFileName.isEmpty()) return false;
+
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)){
+        QMessageBox::critical(this,"Error","File could not be opened");
+        return false;
+    }
+
+    QTextStream out(&file);
+    out << asText;
+    file.close();
+
+    return true;
 }
 
 /**
@@ -704,10 +755,12 @@ void BUMain::resetCounters()
 void BUMain::closeEvent(QCloseEvent *event)
 {
     //qDebug() << "Begin closeEvent";
-    if(this->saveSessionToFile("Session.txt"))
+    if(this->saveSessionToFile("Session.txt")) {
+        this->saveConfig();
         event->accept();
-    else
+    } else {
         event->ignore();
+    }
     //qDebug() << "End closeEvent";
 }
 
@@ -813,6 +866,7 @@ void BUMain::on_actionQuit_triggered()
 {
     //qDebug() << "Begin on_actionQuit_triggered"
     this->saveSessionToFile("Session.txt");
+    this->saveConfig();
     QApplication::quit();
     //qDebug() << "End on_actionQuit_triggered"
 }
@@ -871,12 +925,12 @@ void BUMain::on_actionOpen_session_triggered()
 void BUMain::on_actionLoad_theme_triggered()
 {
     //qDebug() << "Begin on_actionLoad_theme_triggered"
-    gsTargetFile = QFileDialog::getOpenFileName(this, tr("Open Style"),
+    gsThemeFile = QFileDialog::getOpenFileName(this, tr("Open Style"),
                                                     "",
                                                     tr("Stylesheets (*.qss);;All files(*.*)"));
 
-    if(gsTargetFile != NULL && gsTargetFile != ""){
-        QFile styleFile(gsTargetFile);
+    if(gsThemeFile != NULL && gsThemeFile != ""){
+        QFile styleFile(gsThemeFile);
         styleFile.open(QFile::ReadOnly);
         QString StyleSheet = QLatin1String(styleFile.readAll());
         this->setStyleSheet(StyleSheet);
@@ -923,6 +977,7 @@ void BUMain::on_actionDefault_theme_triggered()
 {
     //qDebug() << "Begin on_actionDefault_theme_triggered"
     this->setStyleSheet("");
+    gsThemeFile = "";
     //qDebug() << "End on_actionDefault_theme_triggered"
 }
 
@@ -1008,4 +1063,3 @@ void BUMain::keyReleaseEvent(QKeyEvent *event)
         break;
     }
 }
-
