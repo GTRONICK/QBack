@@ -55,9 +55,15 @@ void LogViewer::logger_slot_logInfo(QString info)
     if (!file.open(QIODevice::WriteOnly | QFile::Append))
            return;
 
-    QTextStream out(&file);
-    out << info << "\r\n";
-    file.close();
+    if(file.exists() && file.size() > 100000 ) {
+        file.close();
+        this->on_clearButton_clicked();
+        this->logger_slot_logInfo(info);
+    } else {
+        QTextStream out(&file);
+        out << info << "\r\n";
+        file.close();
+    }
 
     if(info.contains(">> ERROR!")){
         QMessageBox::critical(this,"Error","Some files could not be copied,\nSee the log for details.");
