@@ -1,4 +1,4 @@
-# QBack 1.9.1
+# QBack 1.9.0
 A simple, but powerful backup utility.
 
 ![QBack_GUI](https://sites.google.com/site/gtronick/QBack1.5.0.PNG)
@@ -8,7 +8,7 @@ QBack lets you copy files from several paths, to several targets. You can also s
 # 1. HOW TO USE
 -------------------------------
 
-Download the latest release from : ![QBack 1.9.1](https://github.com/GTRONICK/QBack/releases/tag/v1.9.1)
+Download the latest release from : ![QBack 1.9.0](https://github.com/GTRONICK/QBack/releases/tag/v1.9.0)
 
 ## A. Copying one folder recursively:
 
